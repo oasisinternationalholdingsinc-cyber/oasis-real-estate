@@ -31,7 +31,6 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
         />
       </head>
-
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

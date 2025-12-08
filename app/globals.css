@@ -26,15 +26,11 @@ body {
   margin: 0;
   padding: 0;
 
-  /* Ensures the app ALWAYS fills the full screen on iPhone */
   width: 100%;
   height: 100%;
-
-  /* Prevent Safari zoom-out weirdness */
   max-width: 100vw;
   overflow-x: hidden;
 
-  /* Smooth rendering */
   -webkit-text-size-adjust: 100%;
 }
 
