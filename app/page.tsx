@@ -107,8 +107,8 @@ export default function PartingtonPage() {
       {/* Top gradient backdrop */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
 
-      {/* Page wrapper */}
-      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-10 sm:px-6 sm:pt-10 lg:px-8 lg:pt-8">
+      {/* Page wrapper – extra top padding on mobile so title never hides under iOS chrome */}
+      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-20 sm:px-6 sm:pt-16 lg:px-8 lg:pt-12">
         {/* NAVBAR */}
         <header className="flex items-center justify-between gap-4 pb-4">
           <div className="flex items-center gap-3">
@@ -153,7 +153,7 @@ export default function PartingtonPage() {
             </p>
 
             {/* Two-line mobile-friendly heading */}
-            <h1 className="mt-3 text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl">
+            <h1 className="mt-3 text-[1.7rem] font-semibold leading-snug text-slate-50 sm:text-4xl">
               <span className="block">
                 Modern 3-Bedroom Executive Home with Finished Basement
               </span>
