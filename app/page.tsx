@@ -102,7 +102,7 @@ export default function PartingtonPage() {
   return (
     <div className="min-h-screen bg-black text-slate-100">
       {/* Top gradient backdrop */}
-      <div className="absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent pointer-events-none" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
 
       {/* Page wrapper */}
       <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-6 sm:px-6 lg:px-8">
@@ -144,13 +144,25 @@ export default function PartingtonPage() {
         {/* HERO */}
         <section className="mt-4 grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
           {/* Left: Text */}
-          <div>
+          <div className="w-full">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
               831 Partington Ave · Windsor, ON N9B 2N9
             </p>
-            <h1 className="mt-3 text-3xl font-semibold leading-tight text-slate-50 sm:text-4xl">
-              Modern 3-Bedroom Executive Home with Finished Basement&nbsp;—
-              Minutes from University
+            <h1
+              className="
+                mt-3
+                text-2xl
+                sm:text-3xl
+                md:text-4xl
+                font-semibold
+                leading-snug
+                sm:leading-tight
+                text-slate-50
+                break-words
+              "
+            >
+              Modern 3-Bedroom Executive Home with Finished Basement — Minutes
+              from the University of Windsor
             </h1>
 
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300">
@@ -203,7 +215,9 @@ export default function PartingtonPage() {
               </div>
               <div>
                 <dt className="text-slate-500">Utilities</dt>
-                <dd className="font-medium">Tenant responsible for all utilities</dd>
+                <dd className="font-medium">
+                  Tenant responsible for all utilities
+                </dd>
               </div>
             </dl>
           </div>
