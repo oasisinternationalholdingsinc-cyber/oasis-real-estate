@@ -107,8 +107,8 @@ export default function PartingtonPage() {
       {/* Top gradient backdrop */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
 
-      {/* Page wrapper – extra top padding on mobile so title & paragraph never hide */}
-      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-24 sm:px-6 sm:pt-20 lg:px-8 lg:pt-16">
+      {/* Page wrapper */}
+      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-16 sm:px-6 sm:pt-14 lg:px-8 lg:pt-10">
         {/* NAVBAR */}
         <header className="flex items-center justify-between gap-4 pb-4">
           <div className="flex items-center gap-3">
@@ -145,24 +145,24 @@ export default function PartingtonPage() {
         </header>
 
         {/* HERO */}
-        <section className="mt-1 grid gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+        <section className="mt-4 grid gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
           {/* Left: Text */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300 break-words">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
               831 Partington Ave · Windsor, ON N9B 2N9
             </p>
 
             {/* Two-line mobile-friendly heading */}
-            <h1 className="mt-3 text-[1.45rem] font-semibold leading-snug text-slate-50 break-words sm:text-4xl">
+            <h1 className="mt-3 text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl">
               <span className="block">
                 Modern 3-Bedroom Executive Home with Finished Basement
               </span>
-              <span className="mt-1 block text-[1rem] font-normal text-slate-200 sm:text-xl">
+              <span className="mt-1 block text-[1.05rem] font-normal text-slate-200 sm:text-xl">
                 Minutes from the University of Windsor
               </span>
             </h1>
 
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 break-words">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300">
               A fully renovated, move-in ready home in one of Windsor&apos;s most
               convenient neighbourhoods. Ideal for families, professionals, or
               mature students looking for a clean, modern space close to the
@@ -431,7 +431,7 @@ export default function PartingtonPage() {
         </section>
 
         {/* INQUIRY FORM */}
-        <section id="inquire" className="mt-18 mt-16">
+        <section id="inquire" className="mt-16">
           <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-950 via-slate-950 to-black px-5 py-6 shadow-[0_0_45px_rgba(251,191,36,0.25)] sm:px-7 sm:py-7">
             <div className="grid gap-7 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:items-start">
               <div>
