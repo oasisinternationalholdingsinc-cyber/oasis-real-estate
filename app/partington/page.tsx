@@ -72,6 +72,9 @@ export default function PartingtonPage() {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState<null | "ok" | "error">(null);
 
+  // Lightbox state
+  const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSending(true);
@@ -102,10 +105,10 @@ export default function PartingtonPage() {
   return (
     <div className="min-h-screen bg-black text-slate-100">
       {/* Top gradient backdrop */}
-      <div className="absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent pointer-events-none" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
 
-      {/* Page wrapper */}
-      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-6 sm:px-6 lg:px-8">
+      {/* Page wrapper – extra top padding on mobile so title never hides under iOS chrome */}
+      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-20 sm:px-6 sm:pt-16 lg:px-8 lg:pt-12">
         {/* NAVBAR */}
         <header className="flex items-center justify-between gap-4 pb-4">
           <div className="flex items-center gap-3">
@@ -142,15 +145,21 @@ export default function PartingtonPage() {
         </header>
 
         {/* HERO */}
-        <section className="mt-4 grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+        <section className="mt-2 grid gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
           {/* Left: Text */}
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
               831 Partington Ave · Windsor, ON N9B 2N9
             </p>
-            <h1 className="mt-3 text-3xl font-semibold leading-tight text-slate-50 sm:text-4xl">
-              Modern 3-Bedroom Executive Home with Finished Basement&nbsp;—
-              Minutes from University
+
+            {/* Two-line mobile-friendly heading */}
+            <h1 className="mt-3 text-[1.7rem] font-semibold leading-snug text-slate-50 sm:text-4xl">
+              <span className="block">
+                Modern 3-Bedroom Executive Home with Finished Basement
+              </span>
+              <span className="mt-1 block text-[1.05rem] font-normal text-slate-200 sm:text-xl">
+                Minutes from the University of Windsor
+              </span>
             </h1>
 
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300">
@@ -212,7 +221,12 @@ export default function PartingtonPage() {
           <div className="relative">
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-amber-400/5 to-emerald-400/10 blur-2xl" />
             <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-black shadow-[0_0_45px_rgba(251,191,36,0.35)]">
-              <div className="relative h-64 w-full sm:h-72 md:h-80">
+              <button
+                type="button"
+                className="relative block h-64 w-full sm:h-72 md:h-80"
+                onClick={() => setLightbox(active)}
+                aria-label="Open image in full screen"
+              >
                 <Image
                   src={active.src}
                   alt={active.alt}
@@ -222,14 +236,16 @@ export default function PartingtonPage() {
                   className="object-cover"
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-              </div>
+              </button>
+
               <div className="flex items-center justify-between px-4 pb-3 pt-3">
                 <div>
                   <p className="text-[11px] font-medium text-amber-200">
                     {active.label}
                   </p>
                   <p className="text-[10px] text-slate-400">
-                    Tap a thumbnail below to explore more rooms.
+                    Tap a thumbnail below to explore more rooms, or tap the big
+                    photo to view full screen.
                   </p>
                 </div>
                 <span className="rounded-full bg-black/60 px-3 py-1 text-[10px] text-slate-200">
@@ -285,7 +301,10 @@ export default function PartingtonPage() {
               <button
                 key={img.src}
                 type="button"
-                onClick={() => setActive(img)}
+                onClick={() => {
+                  setActive(img);
+                  setLightbox(img);
+                }}
                 className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40"
               >
                 <div className="relative h-44 w-full sm:h-44 md:h-40 lg:h-44">
@@ -300,7 +319,7 @@ export default function PartingtonPage() {
                 <div className="flex items-center justify-between px-3 pb-2 pt-2 text-[11px]">
                   <span className="font-medium text-slate-100">{img.label}</span>
                   <span className="text-[10px] text-slate-500 group-hover:text-amber-300">
-                    Tap to highlight
+                    Tap to open
                   </span>
                 </div>
               </button>
@@ -587,6 +606,41 @@ export default function PartingtonPage() {
           </p>
         </footer>
       </div>
+
+      {/* LIGHTBOX OVERLAY */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4"
+          onClick={() => setLightbox(null)}
+        >
+          <div
+            className="absolute right-4 top-4 rounded-full bg-black/70 px-3 py-1 text-xs text-slate-100 hover:text-amber-300"
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightbox(null);
+            }}
+          >
+            Close ✕
+          </div>
+          <div
+            className="relative w-full max-w-4xl max-h-[80vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative aspect-[4/3] w-full">
+              <Image
+                src={lightbox.src}
+                alt={lightbox.alt}
+                fill
+                sizes="100vw"
+                className="object-contain"
+              />
+            </div>
+            <p className="mt-3 text-center text-xs text-slate-200">
+              {lightbox.label}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
