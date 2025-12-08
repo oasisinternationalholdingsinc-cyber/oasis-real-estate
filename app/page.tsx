@@ -108,13 +108,7 @@ export default function PartingtonPage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
 
       {/* Page wrapper */}
-      <div
-        className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-6 sm:px-6 lg:px-8"
-        // Safe-area padding for iPhone so the hero isn’t under the URL bar
-        style={{
-          paddingTop: "max(1.75rem, env(safe-area-inset-top, 1.75rem))",
-        }}
-      >
+      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-10 sm:px-6 sm:pt-10 lg:px-8 lg:pt-8">
         {/* NAVBAR */}
         <header className="flex items-center justify-between gap-4 pb-4">
           <div className="flex items-center gap-3">
@@ -151,7 +145,7 @@ export default function PartingtonPage() {
         </header>
 
         {/* HERO */}
-        <section className="mt-4 grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+        <section className="mt-2 grid gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
           {/* Left: Text */}
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
