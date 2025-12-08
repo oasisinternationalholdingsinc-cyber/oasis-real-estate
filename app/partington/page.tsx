@@ -103,12 +103,12 @@ export default function PartingtonPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-slate-100">
+    <div className="min-h-screen w-full bg-black text-slate-100 overflow-x-hidden">
       {/* Top gradient backdrop */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
 
       {/* Page wrapper */}
-      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col px-4 pb-16 pt-16 sm:px-6 sm:pt-14 lg:px-8 lg:pt-10">
+      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-16 pt-16 sm:px-6 sm:pt-14 lg:px-8 lg:pt-10">
         {/* NAVBAR */}
         <header className="flex items-center justify-between gap-4 pb-4">
           <div className="flex items-center gap-3">
@@ -145,15 +145,15 @@ export default function PartingtonPage() {
         </header>
 
         {/* HERO */}
-        <section className="mt-4 grid gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+        <section className="mt-4 grid w-full max-w-full gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
           {/* Left: Text */}
-          <div>
+          <div className="w-full max-w-full">
             <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
               831 Partington Ave · Windsor, ON N9B 2N9
             </p>
 
             {/* Two-line mobile-friendly heading */}
-            <h1 className="mt-3 text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl">
+            <h1 className="mt-3 max-w-full break-words text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl">
               <span className="block">
                 Modern 3-Bedroom Executive Home with Finished Basement
               </span>
@@ -212,7 +212,9 @@ export default function PartingtonPage() {
               </div>
               <div>
                 <dt className="text-slate-500">Utilities</dt>
-                <dd className="font-medium">Tenant responsible for all utilities</dd>
+                <dd className="font-medium">
+                  Tenant responsible for all utilities
+                </dd>
               </div>
             </dl>
           </div>
