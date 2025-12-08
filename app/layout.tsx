@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -14,16 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Oasis International Real Estate",
-  description:
-    "Modern 3-Bedroom Executive Home with Finished Basement — Minutes from University. Located at 831 Partington Ave, Windsor, Ontario.",
-};
-
-// ✅ The missing MOBILE FIX — required for proper iPhone layout
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  viewportFit: "cover",
+  description: "Executive Rentals • Windsor, Ontario",
 };
 
 export default function RootLayout({
@@ -32,9 +23,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en">
+      <head>
+        {/* 🔥 CRITICAL FOR MOBILE SCALING / iPHONE FIX */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+        />
+      </head>
+
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-black`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>
