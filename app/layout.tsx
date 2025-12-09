@@ -1,24 +1,34 @@
-// app/layout.tsx
-import type { Metadata } from "next";
 import "./globals.css";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 
-const BASE_URL = "www.oasisintlrealestate.com"; // TODO: replace with your real domain
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+});
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+});
+
+// ✅ MUST include protocol or Next will throw ERR_INVALID_URL
+const BASE_URL = "https://www.oasisintlrealestate.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Oasis International Real Estate | Executive Rentals in Windsor",
+    default: "Oasis International Real Estate",
     template: "%s | Oasis International Real Estate",
   },
   description:
-    "Premium, modern executive rentals in Windsor, Ontario. Explore renovated homes like 831 Partington Ave, ideal for families, professionals, and mature students.",
+    "Executive rental properties in Windsor, Ontario. Professionally managed homes with modern finishes and thoughtful details.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Oasis International Real Estate | Executive Rentals in Windsor",
+    title: "Oasis International Real Estate – Executive Rentals in Windsor",
     description:
-      "Premium, modern executive rentals in Windsor, Ontario. Explore renovated homes like 831 Partington Ave near the University of Windsor.",
+      "Explore modern, professionally managed executive rental properties in Windsor, Ontario.",
     url: BASE_URL,
     siteName: "Oasis International Real Estate",
     images: [
@@ -26,7 +36,7 @@ export const metadata: Metadata = {
         url: "/images/partington/front-exterior-renovated.jpg",
         width: 1200,
         height: 630,
-        alt: "Oasis International Real Estate – Executive Home in Windsor",
+        alt: "Oasis International Real Estate – 831 Partington Ave",
       },
     ],
     locale: "en_CA",
@@ -34,10 +44,14 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Oasis International Real Estate",
+    title: "Oasis International Real Estate – Executive Rentals in Windsor",
     description:
-      "Executive rentals and premium renovated homes in Windsor, Ontario.",
+      "Modern, executive-style rental properties in Windsor, Ontario.",
     images: ["/images/partington/front-exterior-renovated.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -47,8 +61,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-slate-100`}
+      >
+        {children}
+      </body>
     </html>
   );
 }
