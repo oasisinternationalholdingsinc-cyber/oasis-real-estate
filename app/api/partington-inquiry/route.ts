@@ -90,8 +90,8 @@ export async function POST(req: Request) {
 
     const { error } = await resend.emails.send({
       from: `Oasis International Real Estate <notifications@oasisintlrealestate.com>`,
-      to: "oasisintlrealestate@gmail.com",
-      replyTo: email, // so you can just hit Reply
+      to: "notifications@oasisintlrealestate.com",   // ✅ UPDATED — FINAL DESTINATION
+      replyTo: email,                                 // ✔️ Keep this so you can reply instantly
       subject,
       html,
     });

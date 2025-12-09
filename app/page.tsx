@@ -327,10 +327,10 @@ export default function OasisHomePage() {
                   <div className="mt-4 space-y-1 text-xs">
                     <p className="text-slate-400">Email</p>
                     <a
-                      href="mailto:rentals@oasisintlrealestate.com?subject=Oasis%20Executive%20Rental%20Inquiry"
+                      href="mailto:notifications@oasisintlrealestate.com?subject=Oasis%20Executive%20Rental%20Inquiry"
                       className="text-amber-300 hover:underline"
                     >
-                      rentals@oasisintlrealestate.com
+                      notifications@oasisintlrealestate.com
                     </a>
                   </div>
 
