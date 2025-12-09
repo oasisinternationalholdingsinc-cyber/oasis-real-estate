@@ -29,77 +29,86 @@ export async function POST(req: Request) {
 
     if (!fullName || !email || !message) {
       return NextResponse.json(
-        { ok: false, error: "Missing required fields" },
+        { ok: false, error: "Missing required fields." },
         { status: 400 }
       );
     }
 
-    const subject = `New viewing inquiry – 831 Partington Ave – ${fullName}`;
+    const subject = `New Partington Inquiry – ${fullName}`;
 
     const html = `
-      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #0f172a;">
-        <h2 style="margin-bottom: 4px;">New Viewing / Info Request</h2>
-        <p style="margin-top: 0; margin-bottom: 16px; font-size: 13px; color: #64748b;">
-          Property: <strong>831 Partington Ave, Windsor, ON</strong>
+      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 16px; background:#050816; color:#e5e7eb;">
+        <h2 style="margin:0 0 8px;font-size:20px;">New inquiry for 831 Partington Ave</h2>
+        <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;">
+          Someone just submitted the form on your Partington listing page.
         </p>
-
-        <h3 style="font-size: 14px; margin-bottom: 4px;">Contact details</h3>
-        <table style="font-size: 13px; border-collapse: collapse;">
+        <table cellpadding="6" cellspacing="0" style="font-size:13px; border-collapse:collapse;">
           <tr>
-            <td style="padding: 2px 8px 2px 0; color:#64748b;">Name</td>
-            <td style="padding: 2px 0;"><strong>${fullName}</strong></td>
+            <td style="color:#9ca3af;">Name</td>
+            <td style="color:#e5e7eb;">${fullName}</td>
           </tr>
           <tr>
-            <td style="padding: 2px 8px 2px 0; color:#64748b;">Email</td>
-            <td style="padding: 2px 0;">${email}</td>
+            <td style="color:#9ca3af;">Email</td>
+            <td style="color:#e5e7eb;">${email}</td>
           </tr>
           ${
             phone
-              ? `<tr><td style="padding: 2px 8px 2px 0; color:#64748b;">Phone</td><td style="padding: 2px 0;">${phone}</td></tr>`
+              ? `<tr><td style="color:#9ca3af;">Phone</td><td style="color:#e5e7eb;">${phone}</td></tr>`
               : ""
           }
           ${
             moveInDate
-              ? `<tr><td style="padding: 2px 8px 2px 0; color:#64748b;">Preferred move-in</td><td style="padding: 2px 0;">${moveInDate}</td></tr>`
+              ? `<tr><td style="color:#9ca3af;">Preferred move-in</td><td style="color:#e5e7eb;">${moveInDate}</td></tr>`
               : ""
           }
           ${
             groupType
-              ? `<tr><td style="padding: 2px 8px 2px 0; color:#64748b;">Group type</td><td style="padding: 2px 0;">${groupType}</td></tr>`
+              ? `<tr><td style="color:#9ca3af;">Who will live here?</td><td style="color:#e5e7eb;">${groupType}</td></tr>`
               : ""
           }
           ${
             source
-              ? `<tr><td style="padding: 2px 8px 2px 0; color:#64748b;">Heard about listing via</td><td style="padding: 2px 0;">${source}</td></tr>`
+              ? `<tr><td style="color:#9ca3af;">How they heard about it</td><td style="color:#e5e7eb;">${source}</td></tr>`
               : ""
           }
+          <tr>
+            <td style="color:#9ca3af;">Consent</td>
+            <td style="color:#e5e7eb;">${consent ? "Checked" : "Not provided"}</td>
+          </tr>
         </table>
 
-        <h3 style="font-size: 14px; margin: 18px 0 6px;">Message</h3>
-        <div style="font-size: 13px; padding: 10px 12px; background:#f1f5f9; border-radius: 8px; white-space: pre-wrap;">
-          ${message}
+        <div style="margin-top:16px; padding-top:12px; border-top:1px solid #1f2937;">
+          <p style="margin:0 0 4px; font-size:13px; color:#9ca3af;">Message:</p>
+          <p style="margin:0; font-size:14px; white-space:pre-line;">${message}</p>
         </div>
 
-        <p style="margin-top: 18px; font-size: 11px; color:#94a3b8;">
-          Consent checkbox: ${consent ? "✅ checked" : "⬜ not checked"}<br/>
-          This email was sent from the Oasis International Real Estate website.
+        <p style="margin-top:20px;font-size:11px;color:#6b7280;">
+          Sent from oasisintlrealestate.com · Partington listing form.
         </p>
       </div>
     `;
 
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: `Oasis International Real Estate <notifications@oasisintlrealestate.com>`,
       to: "oasisintlrealestate@gmail.com",
-      reply_to: email, // so you can just hit Reply
+      replyTo: email, // so you can just hit Reply
       subject,
       html,
     });
 
+    if (error) {
+      console.error("Resend error:", error);
+      return NextResponse.json(
+        { ok: false, error: "Failed to send email." },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({ ok: true });
-  } catch (error) {
-    console.error("partington-inquiry error:", error);
+  } catch (err) {
+    console.error("Partington inquiry API error:", err);
     return NextResponse.json(
-      { ok: false, error: "Failed to send inquiry" },
+      { ok: false, error: "Unexpected server error." },
       { status: 500 }
     );
   }
