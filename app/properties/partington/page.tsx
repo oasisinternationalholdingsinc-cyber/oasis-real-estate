@@ -105,7 +105,7 @@ export default function PartingtonPage() {
 
   return (
     <>
-      {/* JSON-LD for Google / SEO */}
+      {/* SEO / JSON-LD */}
       <Script
         id="partington-jsonld"
         type="application/ld+json"
@@ -125,13 +125,13 @@ export default function PartingtonPage() {
               addressCountry: "CA",
             },
             image: `${BASE_URL}/images/partington/front-exterior-renovated.jpg`,
-            url: `${BASE_URL}/partington`,
+            url: `${BASE_URL}/properties/partington`,
           }),
         }}
       />
 
       <div className="min-h-screen w-full bg-black text-slate-100 overflow-x-hidden">
-        {/* Top gradient backdrop */}
+        {/* Soft amber glow at top */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
 
         {/* Page wrapper */}
@@ -153,14 +153,17 @@ export default function PartingtonPage() {
             </div>
 
             <nav className="hidden items-center gap-6 text-xs font-medium text-slate-300 sm:flex">
+              <a href="/" className="hover:text-amber-300">
+                Oasis Home
+              </a>
+              <a href="/properties" className="hover:text-amber-300">
+                All Properties
+              </a>
               <a href="#gallery" className="hover:text-amber-300">
                 Gallery
               </a>
-              <a href="#features" className="hover:text-amber-300">
-                Features
-              </a>
-              <a href="#location" className="hover:text-amber-300">
-                Location
+              <a href="#inquire" className="hover:text-amber-300">
+                Contact
               </a>
               <a
                 href="#inquire"
@@ -172,14 +175,13 @@ export default function PartingtonPage() {
           </header>
 
           {/* HERO */}
-          <section className="mt-4 grid w-full max-w-full gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+          <section className="mt-4 grid w-full max-w-full gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1.05fr)] lg:items-start">
             {/* Left: Text */}
             <div className="w-full max-w-full">
               <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
                 831 Partington Ave · Windsor, ON N9B 2N9
               </p>
 
-              {/* Two-line mobile-friendly heading */}
               <h1 className="mt-3 max-w-full break-words text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl">
                 <span className="block">
                   Modern 3-Bedroom Executive Home with Finished Basement
@@ -197,18 +199,7 @@ export default function PartingtonPage() {
                 trails.
               </p>
 
-              {/* Badges */}
-              <div className="mt-5 flex flex-wrap gap-3 text-[11px]">
-                <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/60 bg-emerald-500/10 px-3 py-1 text-emerald-300">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
-                  Available Immediately (Flexible Start Date)
-                </span>
-                <span className="inline-flex items-center rounded-full border border-amber-400/60 bg-amber-500/10 px-3 py-1 text-amber-200">
-                  Executive rental · Inquire for pricing
-                </span>
-              </div>
-
-              {/* CTAs */}
+              {/* Hero CTAs */}
               <div className="mt-6 flex flex-wrap gap-3 text-xs">
                 <a
                   href="#inquire"
@@ -217,10 +208,20 @@ export default function PartingtonPage() {
                   Book a Viewing
                 </a>
                 <a
-                  href="#gallery"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-600 bg-slate-900/40 px-5 py-2 text-[11px] font-medium text-slate-200 hover:border-amber-400 hover:text-amber-200"
+                  href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full border border-amber-400/70 bg-black/70 px-5 py-2 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/10"
                 >
-                  View Gallery
+                  Download Application (PDF)
+                </a>
+                <a
+                  href="https://maps.app.goo.gl/8KXx7H3bKqQJtB2t8"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900/60 px-5 py-2 text-[11px] font-medium text-slate-200 hover:border-amber-400 hover:text-amber-200"
+                >
+                  View on Google Maps
                 </a>
               </div>
 
@@ -247,66 +248,101 @@ export default function PartingtonPage() {
               </dl>
             </div>
 
-            {/* Right: Hero image card */}
-            <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-amber-400/5 to-emerald-400/10 blur-2xl" />
-              <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-black shadow-[0_0_45px_rgba(251,191,36,0.35)]">
-                <button
-                  type="button"
-                  className="relative block h-64 w-full sm:h-72 md:h-80"
-                  onClick={() => setLightbox(active)}
-                  aria-label="Open image in full screen"
-                >
-                  <Image
-                    src={active.src}
-                    alt={active.alt}
-                    fill
-                    priority
-                    sizes="(min-width: 1024px) 380px, 100vw"
-                    className="object-cover"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                </button>
+            {/* Right: Hero media + quick-apply box */}
+            <div className="space-y-4">
+              {/* Image card */}
+              <div className="relative">
+                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-amber-400/5 to-emerald-400/10 blur-2xl" />
+                <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-black shadow-[0_0_45px_rgba(251,191,36,0.35)]">
+                  <button
+                    type="button"
+                    className="relative block h-64 w-full sm:h-72 md:h-80"
+                    onClick={() => setLightbox(active)}
+                    aria-label="Open image in full screen"
+                  >
+                    <Image
+                      src={active.src}
+                      alt={active.alt}
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 420px, 100vw"
+                      className="object-cover"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                  </button>
 
-                <div className="flex items-center justify-between px-4 pb-3 pt-3">
-                  <div>
-                    <p className="text-[11px] font-medium text-amber-200">
-                      {active.label}
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      Tap a thumbnail below to explore more rooms, or tap the
-                      big photo to view full screen.
-                    </p>
+                  <div className="flex items-center justify-between px-4 pb-3 pt-3">
+                    <div>
+                      <p className="text-[11px] font-medium text-amber-200">
+                        {active.label}
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        Tap a thumbnail below to explore more rooms, or tap the
+                        big photo to view full screen.
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-black/60 px-3 py-1 text-[10px] text-slate-200">
+                      {galleryImages.indexOf(active) + 1} /{" "}
+                      {galleryImages.length}
+                    </span>
                   </div>
-                  <span className="rounded-full bg-black/60 px-3 py-1 text-[10px] text-slate-200">
-                    {galleryImages.indexOf(active) + 1} / {galleryImages.length}
-                  </span>
-                </div>
 
-                {/* Thumbnails row (scrollable on mobile) */}
-                <div className="flex gap-2 overflow-x-auto px-3 pb-3 pt-1">
-                  {galleryImages.slice(0, 5).map((img) => (
-                    <button
-                      key={img.src}
-                      type="button"
-                      onClick={() => setActive(img)}
-                      className={`relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-xl border transition ${
-                        active.src === img.src
-                          ? "border-amber-400 shadow-md shadow-amber-500/40"
-                          : "border-slate-700 hover:border-amber-300/70"
-                      }`}
-                      aria-label={img.label}
-                    >
-                      <Image
-                        src={img.src}
-                        alt={img.alt}
-                        fill
-                        sizes="96px"
-                        className="object-cover"
-                      />
-                    </button>
-                  ))}
+                  {/* Thumbnails row */}
+                  <div className="flex gap-2 overflow-x-auto px-3 pb-3 pt-1">
+                    {galleryImages.slice(0, 5).map((img) => (
+                      <button
+                        key={img.src}
+                        type="button"
+                        onClick={() => setActive(img)}
+                        className={`relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-xl border transition ${
+                          active.src === img.src
+                            ? "border-amber-400 shadow-md shadow-amber-500/40"
+                            : "border-slate-700 hover:border-amber-300/70"
+                        }`}
+                        aria-label={img.label}
+                      >
+                        <Image
+                          src={img.src}
+                          alt={img.alt}
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 </div>
+              </div>
+
+              {/* Quick-apply info box */}
+              <div className="rounded-2xl border border-amber-500/40 bg-black/70 p-4 text-[11px] text-slate-200">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                  Ready to Apply?
+                </p>
+                <p className="mt-2">
+                  You can start with a quick viewing request, or download the
+                  tenant application form and bring it completed to your
+                  showing.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a
+                    href="#inquire"
+                    className="inline-flex items-center justify-center rounded-full bg-amber-400 px-4 py-1.5 text-[11px] font-semibold text-black shadow-md shadow-amber-500/40 hover:bg-amber-300"
+                  >
+                    Book a Viewing
+                  </a>
+                  <a
+                    href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-full border border-amber-400/70 bg-black/60 px-4 py-1.5 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/10"
+                  >
+                    Download Application
+                  </a>
+                </div>
+                <p className="mt-2 text-[10px] text-slate-500">
+                  Standard income, reference, and credit checks may apply.
+                </p>
               </div>
             </div>
           </section>
@@ -319,13 +355,11 @@ export default function PartingtonPage() {
                   Photo Gallery
                 </h2>
                 <p className="mt-1 text-sm text-slate-300">
-                  Get a feel for the space. All photos are of the actual home at
-                  831 Partington Ave.
+                  All photos are of the actual home at 831 Partington Ave.
                 </p>
               </div>
             </div>
 
-            {/* Responsive gallery grid */}
             <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
               {galleryImages.map((img) => (
                 <button
@@ -437,9 +471,7 @@ export default function PartingtonPage() {
                   riverfront.
                 </p>
                 <ul className="mt-3 space-y-1.5">
-                  <li>
-                    • Approx. 5–10 minutes to University of Windsor (by car)
-                  </li>
+                  <li>• Approx. 5–10 minutes to University of Windsor</li>
                   <li>• Close to groceries, cafes, and essential services</li>
                   <li>• Residential street with mature trees and sidewalks</li>
                 </ul>
@@ -597,7 +629,7 @@ export default function PartingtonPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-1">
+                    <div className="flex flex-wrap items-center gap-3 pt-1">
                       <button
                         type="submit"
                         disabled={sending}
@@ -665,7 +697,7 @@ export default function PartingtonPage() {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4"
             onClick={() => setLightbox(null)}
           >
-            <div
+            <button
               className="absolute right-4 top-4 rounded-full bg-black/70 px-3 py-1 text-xs text-slate-100 hover:text-amber-300"
               onClick={(e) => {
                 e.stopPropagation();
@@ -673,7 +705,7 @@ export default function PartingtonPage() {
               }}
             >
               Close ✕
-            </div>
+            </button>
             <div
               className="relative w-full max-w-4xl max-h-[80vh]"
               onClick={(e) => e.stopPropagation()}
