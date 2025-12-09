@@ -3,42 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import Script from "next/script";
-import type { Metadata } from "next";
 
-const BASE_URL = "www.oasisintlrealestate.com"; // same as layout, update when you have final domain
-
-export const metadata: Metadata = {
-  title: "831 Partington Ave | Executive 3-Bedroom Rental in Windsor",
-  description:
-    "Renovated 3-bedroom home with finished basement, modern kitchen, and private backyard. Minutes from the University of Windsor. Executive rental – inquire to book a viewing.",
-  alternates: {
-    canonical: "/partington",
-  },
-  openGraph: {
-    title: "831 Partington Ave — Executive Rental in Windsor",
-    description:
-      "Modern 3-bedroom home with finished basement, large yard, and updated interiors. Close to the University of Windsor, transit, and amenities.",
-    url: `${BASE_URL}/partington`,
-    siteName: "Oasis International Real Estate",
-    images: [
-      {
-        url: "/images/partington/front-exterior-renovated.jpg",
-        width: 1200,
-        height: 630,
-        alt: "831 Partington Ave – Front Exterior",
-      },
-    ],
-    locale: "en_CA",
-    type: "article",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "831 Partington Ave — Executive Rental in Windsor",
-    description:
-      "Modern 3-bedroom executive home for rent with finished basement and private yard near the University of Windsor.",
-    images: ["/images/partington/front-exterior-renovated.jpg"],
-  },
-};
+const BASE_URL = "https://www.oasisintlrealestate.com";
 
 type GalleryImage = {
   src: string;
