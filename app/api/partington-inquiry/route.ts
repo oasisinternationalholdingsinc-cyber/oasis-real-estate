@@ -1,11 +1,31 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+type InquiryPayload = {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  moveInDate?: string;
+  groupType?: string;
+  source?: string;
+  message?: string;
+  consent?: boolean | string;
+};
+
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn(
+      "[Partington Inquiry] RESEND_API_KEY is not set. Email will be skipped."
+    );
+    return null;
+  }
+  return new Resend(apiKey);
+}
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    const body = (await req.json()) as InquiryPayload;
 
     const {
       fullName,
@@ -16,16 +36,7 @@ export async function POST(req: Request) {
       source,
       message,
       consent,
-    } = body as {
-      fullName?: string;
-      email?: string;
-      phone?: string;
-      moveInDate?: string;
-      groupType?: string;
-      source?: string;
-      message?: string;
-      consent?: string;
-    };
+    } = body;
 
     if (!fullName || !email || !message) {
       return NextResponse.json(
@@ -35,9 +46,18 @@ export async function POST(req: Request) {
     }
 
     const subject = `New Partington Inquiry – ${fullName}`;
+    const consentLabel =
+      typeof consent === "boolean"
+        ? consent
+          ? "Checked"
+          : "Not checked"
+        : consent
+        ? "Checked"
+        : "Not provided";
 
     const html = `
-      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 16px; background:#050816; color:#e5e7eb;">
+      <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+        'Segoe UI', sans-serif; padding: 16px; background:#050816; color:#e5e7eb;">
         <h2 style="margin:0 0 8px;font-size:20px;">New inquiry for 831 Partington Ave</h2>
         <p style="margin:0 0 16px;font-size:14px;color:#9ca3af;">
           Someone just submitted the form on your Partington listing page.
@@ -63,7 +83,7 @@ export async function POST(req: Request) {
           }
           ${
             groupType
-              ? `<tr><td style="color:#9ca3af;">Who will live here?</td><td style="color:#e5e7eb;">${groupType}</td></tr>`
+              ? `<tr><td style="color:#9ca3af;">Who will be living there</td><td style="color:#e5e7eb;">${groupType}</td></tr>`
               : ""
           }
           ${
@@ -73,7 +93,7 @@ export async function POST(req: Request) {
           }
           <tr>
             <td style="color:#9ca3af;">Consent</td>
-            <td style="color:#e5e7eb;">${consent ? "Checked" : "Not provided"}</td>
+            <td style="color:#e5e7eb;">${consentLabel}</td>
           </tr>
         </table>
 
@@ -88,23 +108,36 @@ export async function POST(req: Request) {
       </div>
     `;
 
+    const resend = getResend();
+
+    // If no API key, skip email but don't crash the app
+    if (!resend) {
+      console.error(
+        "[Partington Inquiry] Skipping email send because RESEND_API_KEY is not set."
+      );
+      return NextResponse.json(
+        { ok: true, emailSent: false },
+        { status: 200 }
+      );
+    }
+
     const { error } = await resend.emails.send({
       from: `Oasis International Real Estate <notifications@oasisintlrealestate.com>`,
-      to: "notifications@oasisintlrealestate.com",   // ✅ UPDATED — FINAL DESTINATION
-      replyTo: email,                                 // ✔️ Keep this so you can reply instantly
+      to: "notifications@oasisintlrealestate.com",
+      replyTo: email,
       subject,
       html,
     });
 
     if (error) {
-      console.error("Resend error:", error);
+      console.error("Error sending Partington inquiry email:", error);
       return NextResponse.json(
         { ok: false, error: "Failed to send email." },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, emailSent: true }, { status: 200 });
   } catch (err) {
     console.error("Partington inquiry API error:", err);
     return NextResponse.json(

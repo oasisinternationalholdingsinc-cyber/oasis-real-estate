@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type { CSSProperties, MouseEvent } from "react";
+import type { CSSProperties, MouseEvent, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -102,6 +102,11 @@ export default function PartingtonPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [walkthroughPlaying, setWalkthroughPlaying] = useState(false);
   const [heroTiltStyle, setHeroTiltStyle] = useState<CSSProperties>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<null | "success" | "error">(
+    null
+  );
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
   /* ----- Walkthrough auto-play ----- */
   useEffect(() => {
@@ -182,6 +187,77 @@ export default function PartingtonPage() {
       transform: "rotateX(0deg) rotateY(0deg) scale(1)",
       transition: "transform 220ms ease-out",
     });
+  };
+
+  /* ----- Form submit handler ----- */
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSubmitStatus(null);
+    setSubmitMessage(null);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const fullName = (formData.get("fullName") || "").toString().trim();
+    const email = (formData.get("email") || "").toString().trim();
+    const phone = (formData.get("phone") || "").toString().trim();
+    const moveInDate = (formData.get("moveInDate") || "").toString().trim();
+    const groupType = (formData.get("groupType") || "").toString().trim();
+    const message = (formData.get("message") || "").toString().trim();
+    const consentChecked = formData.get("consent") === "on";
+
+    if (!fullName || !email || !message) {
+      setSubmitting(false);
+      setSubmitStatus("error");
+      setSubmitMessage(
+        "Please fill in your name, email, and a short message before submitting."
+      );
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/partington-inquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fullName,
+          email,
+          phone: phone || undefined,
+          moveInDate: moveInDate || undefined,
+          groupType: groupType || undefined,
+          message,
+          consent: consentChecked,
+          source: "Partington listing page",
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error("Inquiry error:", data);
+        setSubmitStatus("error");
+        setSubmitMessage(
+          "Something went wrong submitting your inquiry. Please try again or email us directly."
+        );
+      } else {
+        setSubmitStatus("success");
+        setSubmitMessage(
+          "Thank you — your inquiry has been received. We’ll follow up with next steps and available viewing times."
+        );
+        form.reset();
+      }
+    } catch (err) {
+      console.error("Inquiry network error:", err);
+      setSubmitStatus("error");
+      setSubmitMessage(
+        "We couldn't reach the server. Please check your connection or try again shortly."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   /* ----- Fade-in hooks ----- */
@@ -539,40 +615,59 @@ export default function PartingtonPage() {
             .
           </p>
 
-          {/* For now this is client-side only. Later you can wire to Supabase + Resend. */}
-          <form className="mt-5 space-y-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-5 sm:p-6">
+          <form
+            className="mt-5 space-y-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-5 sm:p-6"
+            onSubmit={handleSubmit}
+          >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300">Full name</label>
+                <label className="text-[11px] text-slate-300" htmlFor="fullName">
+                  Full name
+                </label>
                 <input
+                  id="fullName"
+                  name="fullName"
                   type="text"
                   className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                  required
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300">Email</label>
+                <label className="text-[11px] text-slate-300" htmlFor="email">
+                  Email
+                </label>
                 <input
+                  id="email"
+                  name="email"
                   type="email"
                   className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                  required
                 />
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300">
+                <label className="text-[11px] text-slate-300" htmlFor="phone">
                   Phone (optional)
                 </label>
                 <input
+                  id="phone"
+                  name="phone"
                   type="tel"
                   className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300">
+                <label
+                  className="text-[11px] text-slate-300"
+                  htmlFor="moveInDate"
+                >
                   Preferred move-in date
                 </label>
                 <input
+                  id="moveInDate"
+                  name="moveInDate"
                   type="date"
                   className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
                 />
@@ -580,10 +675,15 @@ export default function PartingtonPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-300">
+              <label className="text-[11px] text-slate-300" htmlFor="groupType">
                 Who will be living here?
               </label>
-              <select className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400">
+              <select
+                id="groupType"
+                name="groupType"
+                className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                defaultValue="Professionals"
+              >
                 <option>Professionals</option>
                 <option>Family</option>
                 <option>Mature students</option>
@@ -592,18 +692,22 @@ export default function PartingtonPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-300">
+              <label className="text-[11px] text-slate-300" htmlFor="message">
                 Tell us a bit about yourself and what you&apos;re looking for
               </label>
               <textarea
+                id="message"
+                name="message"
                 rows={4}
                 className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                required
               />
             </div>
 
             <label className="flex items-start gap-2 text-[11px] text-slate-300">
               <input
                 type="checkbox"
+                name="consent"
                 className="mt-1 h-4 w-4 rounded border-slate-700 bg-black"
               />
               <span>
@@ -612,12 +716,22 @@ export default function PartingtonPage() {
               </span>
             </label>
 
-            <button
-              type="submit"
-              className="mt-2 inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300"
-            >
-              Submit Inquiry
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {submitting ? "Submitting..." : "Submit Inquiry"}
+              </button>
+
+              {submitStatus === "success" && submitMessage && (
+                <p className="text-[11px] text-emerald-300">{submitMessage}</p>
+              )}
+              {submitStatus === "error" && submitMessage && (
+                <p className="text-[11px] text-rose-300">{submitMessage}</p>
+              )}
+            </div>
 
             <div className="mt-3 space-y-1 text-[10px] text-slate-500">
               <p className="font-semibold">Screening note</p>
