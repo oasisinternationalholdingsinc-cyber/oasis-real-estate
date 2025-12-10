@@ -123,7 +123,7 @@ export async function POST(req: Request) {
 
     const { error } = await resend.emails.send({
       from: `Oasis International Real Estate <notifications@oasisintlrealestate.com>`,
-      to: "notifications@oasisintlrealestate.com",
+      to: "oasisintlrealestate@gmail.com", // 👈 now goes to your real inbox
       replyTo: email,
       subject,
       html,
