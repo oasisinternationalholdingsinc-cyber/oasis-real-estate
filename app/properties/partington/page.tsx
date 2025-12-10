@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, MouseEvent } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import type { Metadata } from "next";
+
+const BASE_URL = "www.oasisintlrealestate.com";
+
+export const metadata: Metadata = {
+  title: "831 Partington Ave | Executive 3-Bedroom Rental in Windsor",
+  description: "...",
+  // ...
+};
 
 /* -------------------- Helpers -------------------- */
 
@@ -280,13 +286,13 @@ export default function PartingtonPage() {
               </button>
 
               <a
-                href="/forms/Oasis_Tenant_Application_831_Partington_OnePage.pdf"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-full border border-amber-400/60 bg-black/40 px-4 py-2 text-sm font-medium text-amber-100 shadow-[0_0_0_1px_rgba(15,23,42,1)] transition hover:border-amber-300 hover:text-amber-300"
-              >
-                Download Application (PDF)
-              </a>
+		href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
+  		target="_blank"
+  		rel="noopener noreferrer"
+  		className="inline-flex items-center justify-center rounded-full border border-amber-400/60 bg-black/40 px-4 py-2 text-sm font-medium text-amber-100 shadow-[0_0_0_1px_rgba(15,23,42,1)] transition hover:border-amber-300 hover:text-amber-300"
+		>
+  		Download Application (PDF)
+		</a>
 
               <button
                 type="button"
