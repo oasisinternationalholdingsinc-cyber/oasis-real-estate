@@ -11,7 +11,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 });
 
-// ✅ MUST include protocol or Next will throw ERR_INVALID_URL
+// ✅ Full URL with protocol so `new URL` works during build
 const BASE_URL = "https://www.oasisintlrealestate.com";
 
 export const metadata: Metadata = {
@@ -21,14 +21,14 @@ export const metadata: Metadata = {
     template: "%s | Oasis International Real Estate",
   },
   description:
-    "Executive rental properties in Windsor, Ontario. Professionally managed homes with modern finishes and thoughtful details.",
+    "Curated executive rentals in Windsor, Ontario, maintained to a modern, health-focused standard.",
   alternates: {
-    canonical: "/",
+    canonical: BASE_URL,
   },
   openGraph: {
     title: "Oasis International Real Estate – Executive Rentals in Windsor",
     description:
-      "Explore modern, professionally managed executive rental properties in Windsor, Ontario.",
+      "Explore modern, professionally managed executive rentals with upgraded mechanicals, clean air, and clean water.",
     url: BASE_URL,
     siteName: "Oasis International Real Estate",
     images: [
