@@ -1,16 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, MouseEvent } from "react";
+import { useState, useEffect, useRef } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
-// NO Metadata import
-// NO BASE_URL (unless you use it in JSX)
-// NO export const metadata...
-
-export default function PartingtonPage() {
-  // ...all your existing gallery / walkthrough / form code...
-}
 
 /* -------------------- Helpers -------------------- */
 
@@ -101,23 +94,14 @@ const galleryImages: GalleryImage[] = [
     alt: "Backyard view with grass and mature trees.",
     label: "Backyard – Rear View",
   },
-  // Future mechanical shots (you can replace placeholders later):
-  // {
-  //   src: "/images/partington/furnace-high-efficiency.jpg",
-  //   alt: "SMARTAIR 1000 high-efficiency furnace with media filter.",
-  //   label: "High-Efficiency SMARTAIR Furnace",
-  // },
-  // {
-  //   src: "/images/partington/reverse-osmosis-system.jpg",
-  //   alt: "Reliance reverse osmosis water system under kitchen sink.",
-  //   label: "Reverse Osmosis Water System",
-  // },
 ];
+
+/* -------------------- Main Page -------------------- */
 
 export default function PartingtonPage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [walkthroughPlaying, setWalkthroughPlaying] = useState(false);
-  const [heroTiltStyle, setHeroTiltStyle] = useState<React.CSSProperties>({});
+  const [heroTiltStyle, setHeroTiltStyle] = useState<CSSProperties>({});
 
   /* ----- Walkthrough auto-play ----- */
   useEffect(() => {
@@ -168,7 +152,9 @@ export default function PartingtonPage() {
   };
 
   /* ----- Smooth scroll to inquiry ----- */
-  const scrollToInquiry = (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+  const scrollToInquiry = (
+    e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>
+  ) => {
     e.preventDefault();
     const el = document.getElementById("partington-inquiry");
     if (el) {
@@ -288,13 +274,13 @@ export default function PartingtonPage() {
               </button>
 
               <a
-		href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
-  		target="_blank"
-  		rel="noopener noreferrer"
-  		className="inline-flex items-center justify-center rounded-full border border-amber-400/60 bg-black/40 px-4 py-2 text-sm font-medium text-amber-100 shadow-[0_0_0_1px_rgba(15,23,42,1)] transition hover:border-amber-300 hover:text-amber-300"
-		>
-  		Download Application (PDF)
-		</a>
+                href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-amber-400/60 bg-black/40 px-4 py-2 text-sm font-medium text-amber-100 shadow-[0_0_0_1px_rgba(15,23,42,1)] transition hover:border-amber-300 hover:text-amber-300"
+              >
+                Download Application (PDF)
+              </a>
 
               <button
                 type="button"
@@ -717,7 +703,9 @@ export default function PartingtonPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setWalkthroughPlaying((prev) => !prev || lightboxIndex === null)
+                    setWalkthroughPlaying(
+                      (prev) => !prev || lightboxIndex === null
+                    )
                   }
                   className="rounded-full border border-slate-600 bg-black/60 px-3 py-1 text-xs hover:border-amber-300 hover:text-amber-200"
                 >
