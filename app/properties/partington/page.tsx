@@ -1,14 +1,16 @@
 "use client";
 
-import type { Metadata } from "next";
+import { useState, useEffect, useRef, MouseEvent } from "react";
+import Image from "next/image";
+import Link from "next/link";
 
-const BASE_URL = "www.oasisintlrealestate.com";
+// NO Metadata import
+// NO BASE_URL (unless you use it in JSX)
+// NO export const metadata...
 
-export const metadata: Metadata = {
-  title: "831 Partington Ave | Executive 3-Bedroom Rental in Windsor",
-  description: "...",
-  // ...
-};
+export default function PartingtonPage() {
+  // ...all your existing gallery / walkthrough / form code...
+}
 
 /* -------------------- Helpers -------------------- */
 
