@@ -114,17 +114,13 @@ export async function POST(req: Request) {
 
       if (!sendInternal.error) {
         emailSent = true;
-      } else {
-        console.error("[Partington Inquiry] Error sending internal email:", sendInternal.error);
       }
-    } else {
-      console.error("[Partington Inquiry] Resend not configured, cannot send emails.");
     }
 
     // ---------- AI / STATIC AUTO-REPLY TO TENANT ----------
     let autoReplySent = false;
 
-    // Default static reply (in case AI is unavailable or fails)
+    // Default static reply (if AI missing or fails)
     let replyBody = `
 Thank you for your inquiry about 831 Partington Ave.
 
@@ -169,9 +165,7 @@ ${message}
           ],
         });
 
-        const aiReply =
-          ai.choices?.[0]?.message?.content?.trim() || null;
-
+        const aiReply = ai.choices?.[0]?.message?.content?.trim();
         if (aiReply) {
           replyBody = aiReply;
         }
@@ -180,32 +174,32 @@ ${message}
       }
     }
 
-    const autoReplyHtml = `
-      <div style="font-family: system-ui; padding: 16px; background:#fafafa; color:#111;">
-        <h2 style="margin:0 0 12px;font-size:20px;">Thank you, ${fullName}!</h2>
-        <div style="font-size:14px; line-height:1.5;">
-          ${replyBody
-            .split("\n")
-            .map((line) => `<p style="margin:0 0 8px;">${line}</p>`)
-            .join("")}
-        </div>
-
-        <hr style="margin:20px 0;border-top:1px solid #ddd;" />
-
-        <p style="font-size:13px;color:#555;">
-          <strong>Your message:</strong><br/>
-          ${message.replace(/\n/g, "<br/>")}
-        </p>
-
-        <p style="margin-top:20px;font-size:12px;color:#888;">
-          Oasis International Real Estate · Windsor, Ontario<br/>
-          oasisintlrealestate.com
-        </p>
-      </div>
-    `;
-
     if (resend) {
       try {
+        const autoReplyHtml = `
+          <div style="font-family: system-ui; padding: 16px; background:#fafafa; color:#111;">
+            <h2 style="margin:0 0 12px;font-size:20px;">Thank you, ${fullName}!</h2>
+            <div style="font-size:14px; line-height:1.5;">
+              ${replyBody
+                .split("\n")
+                .map((line) => `<p style="margin:0 0 8px;">${line}</p>`)
+                .join("")}
+            </div>
+
+            <hr style="margin:20px 0;border-top:1px solid #ddd;" />
+
+            <p style="font-size:13px;color:#555;">
+              <strong>Your message:</strong><br/>
+              ${message.replace(/\n/g, "<br/>")}
+            </p>
+
+            <p style="margin-top:20px;font-size:12px;color:#888;">
+              Oasis International Real Estate · Windsor, Ontario<br/>
+              oasisintlrealestate.com
+            </p>
+          </div>
+        `;
+
         const sendAuto = await resend.emails.send({
           from: `Oasis International Real Estate <notifications@oasisintlrealestate.com>`,
           to: email,
