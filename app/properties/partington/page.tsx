@@ -1,731 +1,286 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import Script from "next/script";
-
-const BASE_URL = "https://www.oasisintlrealestate.com";
-
-type GalleryImage = {
-  src: string;
-  alt: string;
-  label: string;
-};
-
-const galleryImages: GalleryImage[] = [
-  {
-    src: "/images/partington/front-exterior-renovated.jpg",
-    alt: "Front view of 831 Partington Ave with landscaped planter and wood exterior.",
-    label: "Front Exterior",
-  },
-  {
-    src: "/images/partington/front-deck-renovated.jpg",
-    alt: "Large front deck with railing, flowers, and walkway leading to 831 Partington Ave.",
-    label: "Front Deck & Walkway",
-  },
-  {
-    src: "/images/partington/livingroom-modern-renovation.jpg",
-    alt: "Spacious living room with modern tile floors, red sectional sofa, and recessed lighting.",
-    label: "Living Room – Full View",
-  },
-  {
-    src: "/images/partington/livingroom-feature-wall.jpg",
-    alt: "Feature wall with large built-in TV, fireplace, and black stone accent.",
-    label: "Living Room Feature Wall",
-  },
-  {
-    src: "/images/partington/kitchen-modern-updated.jpg",
-    alt: "Modern kitchen with white counters, dark cabinets, and accent lighting.",
-    label: "Modern Kitchen",
-  },
-  {
-    src: "/images/partington/bathroom-renovated.jpg",
-    alt: "Renovated bathroom with glass shower, vanity, and marble-style tile.",
-    label: "Renovated Bathroom",
-  },
-  {
-    src: "/images/partington/bedroom-bright-cozy.jpg",
-    alt: "Bright bedroom with bed, window, and glossy tile floors.",
-    label: "Bedroom",
-  },
-  {
-    src: "/images/partington/sunroom-large-windows.jpg",
-    alt: "Sunroom hallway with wood ceiling, large windows, and tile floor.",
-    label: "Sunroom / Entry",
-  },
-  {
-    src: "/images/partington/backyard-private.jpg",
-    alt: "Private backyard with lawn, stone path, and fenced perimeter.",
-    label: "Backyard – Grass & Stone Path",
-  },
-  {
-    src: "/images/partington/backyard-private-fenced.jpg",
-    alt: "Wide view of fenced backyard with trees and stone patio area.",
-    label: "Backyard – Fenced Yard",
-  },
-  {
-    src: "/images/partington/basement-laundry-renovated.jpg",
-    alt: "Laundry area with washer, dryer, and wood countertop.",
-    label: "Laundry Area",
-  },
-];
+import Link from "next/link";
 
 export default function PartingtonPage() {
-  const [active, setActive] = useState<GalleryImage>(galleryImages[0]);
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState<null | "ok" | "error">(null);
-  const [lightbox, setLightbox] = useState<GalleryImage | null>(null);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setSending(true);
-    setSent(null);
-
-    const formData = new FormData(e.currentTarget);
-    const body = Object.fromEntries(formData.entries());
-
-    try {
-      const res = await fetch("/api/partington-inquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) throw new Error("Failed");
-
-      setSent("ok");
-      (e.target as HTMLFormElement).reset();
-    } catch (err) {
-      console.error(err);
-      setSent("error");
-    } finally {
-      setSending(false);
-    }
-  }
-
   return (
-    <>
-      {/* SEO / JSON-LD */}
-      <Script
-        id="partington-jsonld"
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Residence",
-            name: "831 Partington Ave, Windsor ON",
-            description:
-              "Executive 3-bedroom rental with finished basement, modern kitchen, and private backyard. Minutes from the University of Windsor.",
-            address: {
-              "@type": "PostalAddress",
-              streetAddress: "831 Partington Ave",
-              addressLocality: "Windsor",
-              postalCode: "N9B 2N9",
-              addressRegion: "ON",
-              addressCountry: "CA",
-            },
-            image: `${BASE_URL}/images/partington/front-exterior-renovated.jpg`,
-            url: `${BASE_URL}/properties/partington`,
-          }),
-        }}
-      />
+    <div className="min-h-screen w-full bg-black text-slate-100 overflow-x-hidden">
+      {/* Same ambient glow style as homepage */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/35 via-amber-500/8 to-transparent" />
 
-      <div className="min-h-screen w-full bg-black text-slate-100 overflow-x-hidden">
-        {/* Soft amber glow at top */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/30 via-amber-500/5 to-transparent" />
-
-        {/* Page wrapper */}
-        <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-16 pt-16 sm:px-6 sm:pt-14 lg:px-8 lg:pt-10">
-          {/* NAVBAR */}
-          <header className="flex items-center justify-between gap-4 pb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-amber-300 to-amber-600 shadow-lg shadow-amber-500/40">
-                <span className="text-sm font-semibold text-black">O</span>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
-                  Oasis International Real Estate
-                </p>
-                <p className="text-[11px] text-slate-400">
-                  Executive Rentals · Windsor, Ontario
-                </p>
-              </div>
+      {/* PAGE WRAPPER – same spacing as homepage so nothing clips */}
+      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-16 pt-16 sm:px-6 sm:pt-14 lg:px-8 lg:pt-10">
+        {/* NAVBAR (matches home) */}
+        <header className="flex items-center justify-between gap-4 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-amber-300 to-amber-600 shadow-lg shadow-amber-500/40">
+              <span className="text-sm font-semibold text-black">O</span>
             </div>
-
-            <nav className="hidden items-center gap-6 text-xs font-medium text-slate-300 sm:flex">
-              <a href="/" className="hover:text-amber-300">
-                Oasis Home
-              </a>
-              <a href="/properties" className="hover:text-amber-300">
-                All Properties
-              </a>
-              <a href="#gallery" className="hover:text-amber-300">
-                Gallery
-              </a>
-              <a href="#inquire" className="hover:text-amber-300">
-                Contact
-              </a>
-              <a
-                href="#inquire"
-                className="rounded-full bg-amber-400 px-4 py-1.5 text-xs font-semibold text-black shadow-md shadow-amber-500/40 hover:bg-amber-300"
-              >
-                Book a Viewing
-              </a>
-            </nav>
-          </header>
-
-          {/* HERO */}
-          <section className="mt-4 grid w-full max-w-full gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1.05fr)] lg:items-start">
-            {/* Left: Text */}
-            <div className="w-full max-w-full">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
-                831 Partington Ave · Windsor, ON N9B 2N9
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+                Oasis International Real Estate
               </p>
-
-              <h1 className="mt-3 max-w-full break-words text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl">
-                <span className="block">
-                  Modern 3-Bedroom Executive Home with Finished Basement
-                </span>
-                <span className="mt-1 block text-[1.05rem] font-normal text-slate-200 sm:text-xl">
-                  Minutes from the University of Windsor
-                </span>
-              </h1>
-
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300">
-                A fully renovated, move-in ready home in one of Windsor&apos;s
-                most convenient neighbourhoods. Ideal for families,
-                professionals, or mature students looking for a clean, modern
-                space close to the University of Windsor, transit, and riverside
-                trails.
-              </p>
-
-              {/* Hero CTAs */}
-              <div className="mt-6 flex flex-wrap gap-3 text-xs">
-                <a
-                  href="#inquire"
-                  className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-[11px] font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300"
-                >
-                  Book a Viewing
-                </a>
-                <a
-                  href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-amber-400/70 bg-black/70 px-5 py-2 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/10"
-                >
-                  Download Application (PDF)
-                </a>
-                <a
-                  href="https://maps.app.goo.gl/8KXx7H3bKqQJtB2t8"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900/60 px-5 py-2 text-[11px] font-medium text-slate-200 hover:border-amber-400 hover:text-amber-200"
-                >
-                  View on Google Maps
-                </a>
-              </div>
-
-              {/* Quick specs */}
-              <dl className="mt-7 grid gap-3 text-[11px] text-slate-300 sm:grid-cols-3">
-                <div>
-                  <dt className="text-slate-500">Layout</dt>
-                  <dd className="font-medium">
-                    3 bedrooms · 1 full bath · finished basement
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">Parking</dt>
-                  <dd className="font-medium">
-                    Driveway + street parking (subject to city rules)
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-slate-500">Utilities</dt>
-                  <dd className="font-medium">
-                    Tenant responsible for all utilities
-                  </dd>
-                </div>
-              </dl>
-            </div>
-
-            {/* Right: Hero media + quick-apply box */}
-            <div className="space-y-4">
-              {/* Image card */}
-              <div className="relative">
-                <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-amber-500/20 via-amber-400/5 to-emerald-400/10 blur-2xl" />
-                <div className="relative overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-black shadow-[0_0_45px_rgba(251,191,36,0.35)]">
-                  <button
-                    type="button"
-                    className="relative block h-64 w-full sm:h-72 md:h-80"
-                    onClick={() => setLightbox(active)}
-                    aria-label="Open image in full screen"
-                  >
-                    <Image
-                      src={active.src}
-                      alt={active.alt}
-                      fill
-                      priority
-                      sizes="(min-width: 1024px) 420px, 100vw"
-                      className="object-cover"
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                  </button>
-
-                  <div className="flex items-center justify-between px-4 pb-3 pt-3">
-                    <div>
-                      <p className="text-[11px] font-medium text-amber-200">
-                        {active.label}
-                      </p>
-                      <p className="text-[10px] text-slate-400">
-                        Tap a thumbnail below to explore more rooms, or tap the
-                        big photo to view full screen.
-                      </p>
-                    </div>
-                    <span className="rounded-full bg-black/60 px-3 py-1 text-[10px] text-slate-200">
-                      {galleryImages.indexOf(active) + 1} /{" "}
-                      {galleryImages.length}
-                    </span>
-                  </div>
-
-                  {/* Thumbnails row */}
-                  <div className="flex gap-2 overflow-x-auto px-3 pb-3 pt-1">
-                    {galleryImages.slice(0, 5).map((img) => (
-                      <button
-                        key={img.src}
-                        type="button"
-                        onClick={() => setActive(img)}
-                        className={`relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-xl border transition ${
-                          active.src === img.src
-                            ? "border-amber-400 shadow-md shadow-amber-500/40"
-                            : "border-slate-700 hover:border-amber-300/70"
-                        }`}
-                        aria-label={img.label}
-                      >
-                        <Image
-                          src={img.src}
-                          alt={img.alt}
-                          fill
-                          sizes="96px"
-                          className="object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick-apply info box */}
-              <div className="rounded-2xl border border-amber-500/40 bg-black/70 p-4 text-[11px] text-slate-200">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-                  Ready to Apply?
-                </p>
-                <p className="mt-2">
-                  You can start with a quick viewing request, or download the
-                  tenant application form and bring it completed to your
-                  showing.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <a
-                    href="#inquire"
-                    className="inline-flex items-center justify-center rounded-full bg-amber-400 px-4 py-1.5 text-[11px] font-semibold text-black shadow-md shadow-amber-500/40 hover:bg-amber-300"
-                  >
-                    Book a Viewing
-                  </a>
-                  <a
-                    href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center rounded-full border border-amber-400/70 bg-black/60 px-4 py-1.5 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/10"
-                  >
-                    Download Application
-                  </a>
-                </div>
-                <p className="mt-2 text-[10px] text-slate-500">
-                  Standard income, reference, and credit checks may apply.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* GALLERY */}
-          <section id="gallery" className="mt-14">
-            <div className="flex items-baseline justify-between gap-4">
-              <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                  Photo Gallery
-                </h2>
-                <p className="mt-1 text-sm text-slate-300">
-                  All photos are of the actual home at 831 Partington Ave.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-              {galleryImages.map((img) => (
-                <button
-                  key={img.src}
-                  type="button"
-                  onClick={() => {
-                    setActive(img);
-                    setLightbox(img);
-                  }}
-                  className="group relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40"
-                >
-                  <div className="relative h-44 w-full sm:h-44 md:h-40 lg:h-44">
-                    <Image
-                      src={img.src}
-                      alt={img.alt}
-                      fill
-                      sizes="(min-width: 1024px) 260px, (min-width: 640px) 50vw, 100vw"
-                      className="object-cover transition duration-300 group-hover:scale-105 group-hover:brightness-110"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between px-3 pb-2 pt-2 text-[11px]">
-                    <span className="font-medium text-slate-100">
-                      {img.label}
-                    </span>
-                    <span className="text-[10px] text-slate-500 group-hover:text-amber-300">
-                      Tap to open
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* FEATURES */}
-          <section id="features" className="mt-16">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-              Home Highlights
-            </h2>
-            <p className="mt-1 text-sm text-slate-300">
-              Renovated with modern finishes and thoughtful touches throughout.
-            </p>
-
-            <div className="mt-5 grid gap-5 md:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-xs">
-                <p className="text-[11px] font-semibold text-amber-200">
-                  Main Floor
-                </p>
-                <ul className="mt-2 space-y-1.5 text-slate-300">
-                  <li>
-                    Open living room with large feature wall &amp; TV niche
-                  </li>
-                  <li>
-                    Modern kitchen with updated cabinets and tile backsplash
-                  </li>
-                  <li>Bright bedroom with glossy tile floors</li>
-                  <li>Renovated 3-piece bathroom with walk-in shower</li>
-                  <li>Sunroom entry with wood ceiling and large windows</li>
-                </ul>
-              </div>
-
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-xs">
-                <p className="text-[11px] font-semibold text-amber-200">
-                  Lower Level &amp; Yard
-                </p>
-                <ul className="mt-2 space-y-1.5 text-slate-300">
-                  <li>
-                    Finished basement living space (ideal rec room or office)
-                  </li>
-                  <li>Dedicated laundry area with washer &amp; dryer</li>
-                  <li>Private fenced backyard with stone walkway</li>
-                  <li>
-                    Front deck perfect for morning coffee or evening wind-down
-                  </li>
-                </ul>
-              </div>
-
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-xs">
-                <p className="text-[11px] font-semibold text-amber-200">
-                  Location &amp; Lifestyle
-                </p>
-                <ul className="mt-2 space-y-1.5 text-slate-300">
-                  <li>Short drive or bus to the University of Windsor</li>
-                  <li>Quiet residential street with mature trees</li>
-                  <li>Easy access to transit, shopping, and riverside</li>
-                  <li>
-                    Ideal for respectful tenants who value a well-kept home
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </section>
-
-          {/* LOCATION */}
-          <section id="location" className="mt-16">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-              Location Snapshot
-            </h2>
-            <p className="mt-1 text-sm text-slate-300">
-              831 Partington Ave, Windsor, Ontario N9B 2N9
-            </p>
-
-            <div className="mt-4 grid gap-5 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-xs text-slate-300">
-                <p>
-                  Located in a convenient pocket of Windsor, this home sits
-                  close to the University of Windsor, major bus routes, and
-                  everyday amenities. It offers the best of both worlds: a quiet
-                  residential feel with easy access to campus, downtown, and the
-                  riverfront.
-                </p>
-                <ul className="mt-3 space-y-1.5">
-                  <li>• Approx. 5–10 minutes to University of Windsor</li>
-                  <li>• Close to groceries, cafes, and essential services</li>
-                  <li>• Residential street with mature trees and sidewalks</li>
-                </ul>
-              </div>
-
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-xs">
-                <p className="text-[11px] font-semibold text-amber-200">
-                  Quick Facts
-                </p>
-                <dl className="mt-2 space-y-1.5 text-slate-300">
-                  <div className="flex justify-between gap-4">
-                    <dt>Home type</dt>
-                    <dd className="text-right">
-                      Detached 3-bedroom with basement
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt>Parking</dt>
-                    <dd className="text-right">
-                      Driveway + street (subject to city rules)
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt>Lease</dt>
-                    <dd className="text-right">12-month preferred</dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt>Utilities</dt>
-                    <dd className="text-right">
-                      Tenant responsible for all utilities
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            </div>
-          </section>
-
-          {/* INQUIRY FORM */}
-          <section id="inquire" className="mt-16">
-            <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-950 via-slate-950 to-black px-5 py-6 shadow-[0_0_45px_rgba(251,191,36,0.25)] sm:px-7 sm:py-7">
-              <div className="grid gap-7 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:items-start">
-                <div>
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                    Book a Viewing / Request Details
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-300">
-                    Share a few details below and we&apos;ll follow up with next
-                    steps, viewing times, and any questions you may have about
-                    831 Partington Ave.
-                  </p>
-
-                  <form
-                    onSubmit={handleSubmit}
-                    className="mt-4 space-y-3 text-xs"
-                  >
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-300">
-                          Full name
-                        </label>
-                        <input
-                          name="fullName"
-                          required
-                          className="w-full rounded-lg border border-slate-700 bg-black/60 px-3 py-2 text-xs text-slate-100 outline-none ring-amber-400/60 focus:border-amber-400 focus:ring"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-300">
-                          Email
-                        </label>
-                        <input
-                          type="email"
-                          name="email"
-                          required
-                          className="w-full rounded-lg border border-slate-700 bg-black/60 px-3 py-2 text-xs text-slate-100 outline-none ring-amber-400/60 focus:border-amber-400 focus:ring"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-300">
-                          Phone (optional)
-                        </label>
-                        <input
-                          name="phone"
-                          className="w-full rounded-lg border border-slate-700 bg-black/60 px-3 py-2 text-xs text-slate-100 outline-none ring-amber-400/60 focus:border-amber-400 focus:ring"
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-300">
-                          Preferred move-in date
-                        </label>
-                        <input
-                          type="date"
-                          name="moveInDate"
-                          className="w-full rounded-lg border border-slate-700 bg-black/60 px-3 py-2 text-xs text-slate-100 outline-none ring-amber-400/60 focus:border-amber-400 focus:ring"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-300">
-                          Who will be living here?
-                        </label>
-                        <select
-                          name="groupType"
-                          className="w-full rounded-lg border border-slate-700 bg-black/60 px-3 py-2 text-xs text-slate-100 outline-none ring-amber-400/60 focus:border-amber-400 focus:ring"
-                        >
-                          <option value="Professionals">Professionals</option>
-                          <option value="Family">Family</option>
-                          <option value="Students">Mature students</option>
-                          <option value="Other">
-                            Other / Prefer not to say
-                          </option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-[11px] text-slate-300">
-                          How did you hear about this listing?
-                        </label>
-                        <input
-                          name="source"
-                          placeholder="Facebook, Marketplace, referral, etc."
-                          className="w-full rounded-lg border border-slate-700 bg-black/60 px-3 py-2 text-xs text-slate-100 outline-none ring-amber-400/60 focus:border-amber-400 focus:ring"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-[11px] text-slate-300">
-                        Tell us a bit about yourself and what you&apos;re
-                        looking for
-                      </label>
-                      <textarea
-                        name="message"
-                        required
-                        rows={4}
-                        className="w-full rounded-lg border border-slate-700 bg-black/60 px-3 py-2 text-xs text-slate-100 outline-none ring-amber-400/60 focus:border-amber-400 focus:ring"
-                      />
-                    </div>
-
-                    <div className="flex items-start gap-2 text-[11px] text-slate-400">
-                      <input
-                        type="checkbox"
-                        name="consent"
-                        required
-                        className="mt-0.5 h-3 w-3 rounded border-slate-600 bg-black/60 text-amber-400 focus:ring-amber-400"
-                      />
-                      <span>
-                        I understand this is an executive rental and I agree to
-                        be contacted about availability, viewing times, and next
-                        steps.
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3 pt-1">
-                      <button
-                        type="submit"
-                        disabled={sending}
-                        className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-[11px] font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-70"
-                      >
-                        {sending ? "Sending..." : "Submit Inquiry"}
-                      </button>
-                      {sent === "ok" && (
-                        <span className="text-[11px] text-emerald-300">
-                          Thank you — we received your inquiry.
-                        </span>
-                      )}
-                      {sent === "error" && (
-                        <span className="text-[11px] text-rose-300">
-                          Something went wrong. Please try again.
-                        </span>
-                      )}
-                    </div>
-                  </form>
-                </div>
-
-                <div className="rounded-2xl border border-amber-500/40 bg-black/50 p-4 text-[11px] text-slate-300">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
-                    Quick Screening Note
-                  </p>
-                  <p className="mt-2">
-                    This home has been renovated with care and is best suited
-                    for respectful, tidy tenants who appreciate a well-kept
-                    space.
-                  </p>
-                  <ul className="mt-3 space-y-1.5">
-                    <li>• Ideal for families, professionals, or mature students</li>
-                    <li>• No large parties or disruptive behaviour</li>
-                    <li>
-                      • Standard income, reference, and credit checks may apply
-                    </li>
-                    <li>• Long-term renters preferred</li>
-                  </ul>
-                  <p className="mt-3 text-[10px] text-slate-500">
-                    Sharing a bit about your group in the form helps us respond
-                    faster and suggest the best viewing options.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* FOOTER */}
-          <footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
-            <p>
-              © {new Date().getFullYear()} Oasis International Real Estate Inc.
-              · Executive Rentals · Windsor, Ontario.
-            </p>
-            <p className="mt-1">
-              This listing is for the main unit at 831 Partington Ave. Details
-              may change without notice; please inquire for the most up-to-date
-              information.
-            </p>
-          </footer>
-        </div>
-
-        {/* LIGHTBOX OVERLAY */}
-        {lightbox && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 px-4"
-            onClick={() => setLightbox(null)}
-          >
-            <button
-              className="absolute right-4 top-4 rounded-full bg-black/70 px-3 py-1 text-xs text-slate-100 hover:text-amber-300"
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightbox(null);
-              }}
-            >
-              Close ✕
-            </button>
-            <div
-              className="relative w-full max-w-4xl max-h-[80vh]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative aspect-[4/3] w-full">
-                <Image
-                  src={lightbox.src}
-                  alt={lightbox.alt}
-                  fill
-                  sizes="100vw"
-                  className="object-contain"
-                />
-              </div>
-              <p className="mt-3 text-center text-xs text-slate-200">
-                {lightbox.label}
+              <p className="text-[11px] text-slate-400">
+                Executive Rentals · Windsor, Ontario
               </p>
             </div>
           </div>
-        )}
+
+          <nav className="hidden items-center gap-6 text-xs font-medium text-slate-300 sm:flex">
+            <Link href="/" className="hover:text-amber-300">
+              Home
+            </Link>
+            <Link href="/properties" className="hover:text-amber-300">
+              Properties
+            </Link>
+            <span className="text-amber-300">831 Partington</span>
+            <a href="#inquire" className="rounded-full bg-amber-400 px-4 py-1.5 text-xs font-semibold text-black shadow-md shadow-amber-500/40 hover:bg-amber-300">
+              Book a Viewing
+            </a>
+          </nav>
+        </header>
+
+        {/* HERO */}
+        <section className="mt-4 grid w-full max-w-full gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1.05fr)] lg:items-start">
+          {/* LEFT: Text */}
+          <div className="w-full max-w-full">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-300">
+              831 Partington Ave · Windsor, ON N9B 2N9
+            </p>
+
+            <h1 className="mt-3 max-w-full break-words text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl md:text-5xl">
+              Modern 3-bedroom executive home with finished basement
+              <span className="mt-2 block text-[1.02rem] font-normal text-slate-200 sm:text-xl">
+                Minutes from the University of Windsor · Professionally managed
+              </span>
+            </h1>
+
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
+              A carefully renovated, move-in ready home for families,
+              professionals, or mature students who care about where they live.
+              Updated mechanicals, clean finishes, and a landlord who treats the
+              property like a long-term investment, not a disposable rental.
+            </p>
+
+            {/* Quick facts pills */}
+            <div className="mt-5 flex flex-wrap gap-2 text-[11px] sm:text-xs">
+              <span className="rounded-full border border-amber-400/70 bg-black/70 px-3 py-1 text-amber-200">
+                3 bedrooms + finished basement
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-200">
+                1 bathroom · fenced yard
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-200">
+                Driveway + street parking
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-200">
+                New furnace & modern finishes
+              </span>
+            </div>
+          </div>
+
+          {/* RIGHT: Main photo card */}
+          <div className="space-y-4">
+            <div className="overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-black shadow-[0_0_40px_rgba(251,191,36,0.3)]">
+              <div className="relative h-64 w-full sm:h-72 md:h-80">
+                <Image
+                  src="/images/partington/front-exterior-renovated.jpg"
+                  alt="Front view of 831 Partington Ave – renovated exterior with wood accents and landscaped front."
+                  fill
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 420px, 100vw"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              </div>
+              <div className="flex items-center justify-between px-4 pb-4 pt-3 text-[11px] text-slate-300">
+                <span>Front exterior · 1 of X photos</span>
+                <span className="text-amber-200">Tap for full gallery (coming soon)</span>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-[11px] text-slate-300">
+              <p className="font-semibold text-amber-200">Who this home is for</p>
+              <p className="mt-2">
+                Best suited for respectful, tidy tenants who appreciate a well-kept space:
+                families, professionals, or mature students with stable income and good references.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* HIGHLIGHTS */}
+        <section className="mt-12">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
+            Home Highlights
+          </h2>
+          <p className="mt-1 text-sm text-slate-300">
+            Renovated interior, modern finishes, and thoughtful layout.
+          </p>
+
+          <div className="mt-5 grid gap-5 md:grid-cols-2 text-xs sm:text-sm">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <h3 className="text-[11px] font-semibold text-amber-200 sm:text-xs">
+                Main Floor
+              </h3>
+              <ul className="mt-2 space-y-1.5 text-slate-300">
+                <li>• Bright living room with feature wall and TV niche</li>
+                <li>• Modern kitchen with updated cabinets & tile backsplash</li>
+                <li>• Glossy tile flooring for easy cleaning</li>
+                <li>• Renovated 3-piece bathroom with walk-in shower</li>
+                <li>• Front sunroom entry with wood ceiling and large windows</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+              <h3 className="text-[11px] font-semibold text-amber-200 sm:text-xs">
+                Lower Level & Exterior
+              </h3>
+              <ul className="mt-2 space-y-1.5 text-slate-300">
+                <li>• Finished basement rec room / office space</li>
+                <li>• Laundry area with washer & dryer</li>
+                <li>• Fenced backyard with stone walkway</li>
+                <li>• Front deck for morning coffee or late-night wind-down</li>
+                <li>• New furnace installed and maintained</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* QUICK FACTS */}
+        <section className="mt-10">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
+            Quick Facts
+          </h2>
+          <dl className="mt-4 grid gap-4 text-[11px] text-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <dt className="text-slate-500">Home type</dt>
+              <dd>Detached 3-bedroom with finished basement</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Parking</dt>
+              <dd>Driveway + street (subject to city rules)</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Lease</dt>
+              <dd>12-month preferred</dd>
+            </div>
+            <div>
+              <dt className="text-slate-500">Utilities</dt>
+              <dd>Tenant pays all utilities</dd>
+            </div>
+          </dl>
+        </section>
+
+        {/* INQUIRY FORM */}
+        <section id="inquire" className="mt-12">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
+            Book a Viewing / Request Details
+          </h2>
+          <p className="mt-1 text-sm text-slate-300">
+            Share a few details and we&apos;ll follow up with available times, next
+            steps, and any questions you have about 831 Partington Ave.
+          </p>
+
+          <form className="mt-5 space-y-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-5 sm:p-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-300">Full name</label>
+                <input
+                  type="text"
+                  className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-300">Email</label>
+                <input
+                  type="email"
+                  className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-300">
+                  Phone (optional)
+                </label>
+                <input
+                  type="tel"
+                  className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] text-slate-300">
+                  Preferred move-in date
+                </label>
+                <input
+                  type="date"
+                  className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] text-slate-300">
+                Who will be living here?
+              </label>
+              <select className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400">
+                <option>Professionals</option>
+                <option>Family</option>
+                <option>Mature students</option>
+                <option>Other / Prefer not to say</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] text-slate-300">
+                Tell us a bit about yourself & what you&apos;re looking for
+              </label>
+              <textarea
+                rows={4}
+                className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
+              />
+            </div>
+
+            <label className="flex items-start gap-2 text-[11px] text-slate-300">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4 rounded border-slate-700 bg-black"
+              />
+              <span>
+                I understand this is an executive rental and agree to be
+                contacted about availability, viewing times, and next steps.
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              className="mt-2 inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300"
+            >
+              Submit Inquiry
+            </button>
+
+            <p className="mt-3 text-[10px] text-slate-500">
+              This simple form does not replace a full application. Standard
+              income, reference, and credit checks may apply.
+            </p>
+          </form>
+        </section>
+
+        {/* FOOTER */}
+        <footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
+          <p>
+            © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
+            Executive Rentals · Windsor, Ontario.
+          </p>
+          <p className="mt-1">
+            This listing is for the main unit at 831 Partington Ave. Details may
+            change without notice; please inquire for the most current
+            information.
+          </p>
+        </footer>
       </div>
-    </>
+    </div>
   );
 }
