@@ -1,20 +1,13 @@
+// app/admin/login/page.tsx
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AdminLoginPage() {
+function AdminLoginInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  // Get intended destination (from middleware)
-  const requested = searchParams.get("next");
-
-  // Normalize dashboard so it always becomes /dashboard/inquiries
-  const nextUrl =
-    !requested || requested === "/dashboard"
-      ? "/dashboard/inquiries"
-      : requested;
+  const next = searchParams.get("next") || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,8 +34,8 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Cookie was set by backend → safe to redirect
-      router.push(nextUrl);
+      // ✅ Cookie set by API, now go to requested page
+      router.push(next);
     } catch (err) {
       console.error("Login error:", err);
       setError("Something went wrong. Please try again.");
@@ -71,7 +64,9 @@ export default function AdminLoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Password</label>
+            <label className="block text-xs text-slate-400 mb-1">
+              Password
+            </label>
             <input
               type="password"
               className="w-full rounded-md bg-slate-900 border border-slate-700 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-400"
@@ -93,5 +88,19 @@ export default function AdminLoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-black text-slate-100">
+          <p className="text-xs text-slate-400">Loading admin login…</p>
+        </div>
+      }
+    >
+      <AdminLoginInner />
+    </Suspense>
   );
 }
