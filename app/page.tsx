@@ -5,13 +5,6 @@ import Link from "next/link";
 import Script from "next/script";
 import { NurBanner } from "./components/NurBanner";
 
-{isSubmitted && (
-  <NurBanner
-    title="Message received by Nūr"
-    body="Thanks for reaching out to Oasis Real Estate. Nūr has received your message and our team will follow up shortly."
-  />
-)}
-
 const BASE_URL = "https://www.oasisintlrealestate.com";
 
 export default function OasisHomePage() {
