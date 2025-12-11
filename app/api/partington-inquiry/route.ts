@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import OpenAI from "openai";
-<NurBanner
-  title="Application received by Nūr"
-  body="Your rental application has been submitted. Nūr has forwarded it to our leasing team for review."
-/>
 
 type InquiryPayload = {
   fullName?: string;
