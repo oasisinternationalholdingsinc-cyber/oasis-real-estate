@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import OpenAI from "openai";
+import { createClient } from "@supabase/supabase-js";
 
 type InquiryPayload = {
   fullName?: string;
@@ -25,10 +26,29 @@ function getResend() {
 function getOpenAI() {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    console.warn("[Partington Inquiry] OPENAI_API_KEY is not set. AI will fall back to static reply.");
+    console.warn(
+      "[Partington Inquiry] OPENAI_API_KEY is not set. AI will fall back to static reply."
+    );
     return null;
   }
   return new OpenAI({ apiKey });
+}
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) {
+    console.warn(
+      "[Partington Inquiry] Supabase URL or SERVICE_ROLE key missing. Skipping DB insert."
+    );
+    return null;
+  }
+
+  return createClient(url, serviceKey, {
+    auth: {
+      persistSession: false,
+    },
+  });
 }
 
 export async function POST(req: Request) {
@@ -63,7 +83,38 @@ export async function POST(req: Request) {
 
     const subject = `New Partington Inquiry – ${fullName}`;
 
-    // ---------- EMAIL TO YOU ----------
+    /* -------------------------------------------
+       1) Insert into tenant_inquiries (if possible)
+       ------------------------------------------- */
+    const supabase = getSupabaseAdmin();
+    let aiSummary: string | null = null;
+
+    // We’ll fill aiSummary below once we have AI reply text
+    // For now, just prepare basic row payload.
+    const baseRow = {
+      property_slug: "831-partington-main",
+      full_name: fullName,
+      email,
+      phone: phone || null,
+      move_in_date: moveInDate || null,
+      group_type: groupType || null,
+      message,
+      consent:
+        typeof consent === "boolean"
+          ? consent
+          : consent
+          ? true
+          : null,
+      source: source || "Partington listing page",
+      ai_quality_score: null,
+      ai_summary: null,
+      ai_raw: null as any,
+      status: "new" as const,
+    };
+
+    /* -------------------------------------------
+       2) Internal email to you
+       ------------------------------------------- */
     const ownerHtml = `
       <div style="font-family: system-ui; padding: 16px; background:#050816; color:#e5e7eb;">
         <h2 style="margin:0 0 8px;font-size:20px;">New inquiry for 831 Partington Ave</h2>
@@ -117,23 +168,27 @@ export async function POST(req: Request) {
       }
     }
 
-    // ---------- AI / STATIC AUTO-REPLY TO TENANT ----------
-    let autoReplySent = false;
+    /* -------------------------------------------
+       3) AI / Nūr auto-reply construction
+       ------------------------------------------- */
 
-    // Default static reply (if AI missing or fails)
+    // Default fallback reply if AI is unavailable
     let replyBody = `
 Thank you for your inquiry about 831 Partington Ave.
 
-We've received your message and will follow up shortly with availability, viewing options, and next steps.
+We’ve received your message and Nūr has logged your details for our leasing team.
 This is an executive-style main unit (3 bedrooms + finished basement, fenced yard, upgraded mechanicals).
 
+We’ll follow up shortly with availability, viewing options, and next steps.
 If you have any urgent questions, you can reply directly to this email.
 
-– Oasis International Real Estate
-Windsor, Ontario
+– Nūr El-Oasis
+  Leasing Assistant, Oasis International Real Estate
+  Windsor, Ontario
     `.trim();
 
     const openai = getOpenAI();
+    let aiRaw: any = null;
 
     if (openai) {
       try {
@@ -143,10 +198,9 @@ Windsor, Ontario
             {
               role: "system",
               content:
-                "You are a warm, professional leasing assistant for Oasis International Real Estate. " +
-                "You reply to inquiries about 831 Partington Ave. Respond politely, thank them, summarize next steps, " +
-                "do NOT promise availability, mention that it's an executive-style main unit with 3 bedrooms + finished basement, " +
-                "and offer to coordinate viewing if appropriate.",
+                "You are Nūr El-Oasis, a warm, professional leasing assistant for Oasis International Real Estate in Windsor, Ontario. " +
+                "You reply to inquiries about the executive-style main unit at 831 Partington Ave (3 bedrooms + finished basement, fenced yard, upgraded mechanicals). " +
+                "Thank them, acknowledge the inquiry, avoid promising availability, and offer to coordinate a viewing and next steps. Keep it 2–4 short paragraphs.",
             },
             {
               role: "user",
@@ -165,20 +219,53 @@ ${message}
           ],
         });
 
+        aiRaw = ai;
         const aiReply = ai.choices?.[0]?.message?.content?.trim();
         if (aiReply) {
           replyBody = aiReply;
         }
+
+        // Simple AI summary for DB (first 280 chars of reply)
+        aiSummary = replyBody.slice(0, 280);
       } catch (err) {
-        console.error("[AI Auto-Reply] Error generating reply, using static fallback:", err);
+        console.error(
+          "[AI Auto-Reply] Error generating reply, using static fallback:",
+          err
+        );
+      }
+    } else {
+      aiSummary = replyBody.slice(0, 280);
+    }
+
+    /* -------------------------------------------
+       4) Now that we have AI info, write to DB
+       ------------------------------------------- */
+    let dbInserted = false;
+
+    if (supabase) {
+      const { error: insertError } = await supabase.from("tenant_inquiries").insert({
+        ...baseRow,
+        ai_summary: aiSummary,
+        ai_raw: aiRaw,
+      });
+
+      if (insertError) {
+        console.error("[Partington Inquiry] Error inserting tenant_inquiries:", insertError);
+      } else {
+        dbInserted = true;
       }
     }
+
+    /* -------------------------------------------
+       5) Send auto-reply email as Nūr
+       ------------------------------------------- */
+    let autoReplySent = false;
 
     if (resend) {
       try {
         const autoReplyHtml = `
           <div style="font-family: system-ui; padding: 16px; background:#fafafa; color:#111;">
-            <h2 style="margin:0 0 12px;font-size:20px;">Thank you, ${fullName}!</h2>
+            <h2 style="margin:0 0 12px;font-size:20px;">Thank you, ${fullName}.</h2>
             <div style="font-size:14px; line-height:1.5;">
               ${replyBody
                 .split("\n")
@@ -194,6 +281,7 @@ ${message}
             </p>
 
             <p style="margin-top:20px;font-size:12px;color:#888;">
+              Nūr El-Oasis · Leasing Assistant<br/>
               Oasis International Real Estate · Windsor, Ontario<br/>
               oasisintlrealestate.com
             </p>
@@ -201,7 +289,7 @@ ${message}
         `;
 
         const sendAuto = await resend.emails.send({
-          from: `Oasis International Real Estate <notifications@oasisintlrealestate.com>`,
+          from: `Nūr El-Oasis <notifications@oasisintlrealestate.com>`,
           to: email,
           subject: "Thanks for your inquiry about 831 Partington Ave",
           html: autoReplyHtml,
@@ -218,7 +306,12 @@ ${message}
     }
 
     return NextResponse.json(
-      { ok: true, emailSent, autoReplySent },
+      {
+        ok: true,
+        emailSent,
+        autoReplySent,
+        dbInserted,
+      },
       { status: 200 }
     );
   } catch (err) {
