@@ -1,19 +1,17 @@
-import { NextResponse } from "next/server";
+// app/api/robots.ts
+import type { MetadataRoute } from "next";
 
-export async function GET() {
-  const body = [
-    "User-agent: *",
-    "Allow: /",
-    "Disallow: /api/",
-    "",
-    "Sitemap: https://www.oasisintlrealestate.com/api/sitemap.xml",
-    "",
-  ].join("\n");
+export default function robots(): MetadataRoute.Robots {
+  const baseUrl = "https://www.oasisintlrealestate.com";
 
-  return new NextResponse(body, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-    },
-  });
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: [],
+      },
+    ],
+    sitemap: `${baseUrl}/api/sitemap.xml`,
+  };
 }
