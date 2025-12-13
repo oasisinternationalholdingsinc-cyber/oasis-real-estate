@@ -39,7 +39,10 @@ export function AdminShell({ children }: AdminShellProps) {
 
           <nav className="flex items-center gap-3 text-xs">
             {navItems.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(item.href + "/");
+              const active =
+                pathname === item.href ||
+                pathname.startsWith(item.href + "/");
+
               return (
                 <Link
                   key={item.href}
@@ -68,7 +71,9 @@ export function AdminShell({ children }: AdminShellProps) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-8">
+        {children}
+      </main>
     </div>
   );
 }
