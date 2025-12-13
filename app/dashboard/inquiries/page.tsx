@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import AdminShell from "@/app/components/AdminShell";
+import { AdminShell } from "@/app/components/AdminShell";
 
 type Inquiry = {
   id: string;
@@ -32,18 +31,20 @@ const STATUS_OPTIONS = [
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleString([], { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function statusLabel(s: string) {
-  return s
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function InquiriesDashboardPage() {
-  const router = useRouter();
-
   const [tab, setTab] = useState<"active" | "archived">("active");
   const [items, setItems] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +65,9 @@ export default function InquiriesDashboardPage() {
         i.message,
         i.property_slug,
         i.status,
-      ].join(" ").toLowerCase();
+      ]
+        .join(" ")
+        .toLowerCase();
       return hay.includes(needle);
     });
   }, [items, q]);
@@ -85,7 +88,10 @@ export default function InquiriesDashboardPage() {
 
     try {
       const archived = tab === "archived" ? "true" : "false";
-      const res = await fetch(`/api/admin/inquiries?archived=${archived}&limit=300`, { cache: "no-store" });
+      const res = await fetch(
+        `/api/admin/inquiries?archived=${archived}&limit=300`,
+        { cache: "no-store" }
+      );
       const data = await res.json();
 
       if (!res.ok) throw new Error(data?.error || "Failed to load inquiries");
@@ -163,7 +169,7 @@ export default function InquiriesDashboardPage() {
   }
 
   return (
-    <AdminShell title="Inquiries">
+    <AdminShell>
       <div className="space-y-4">
         {/* Top controls */}
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -357,7 +363,8 @@ export default function InquiriesDashboardPage() {
 
         {/* Hint footer */}
         <div className="text-xs text-slate-500">
-          Delete is only available from <span className="text-slate-300">Archived</span>.
+          Delete is only available from{" "}
+          <span className="text-slate-300">Archived</span>.
         </div>
       </div>
     </AdminShell>
