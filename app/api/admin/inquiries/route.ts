@@ -1,3 +1,4 @@
+// app/api/admin/inquiries/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
@@ -15,13 +16,19 @@ function isAdmin(req: Request) {
   return cookie.includes("oasis_admin=1");
 }
 
+function noStoreJson(body: any, init?: ResponseInit) {
+  const res = NextResponse.json(body, init);
+  res.headers.set("Cache-Control", "no-store, max-age=0");
+  return res;
+}
+
 export async function GET(req: Request) {
-  if (!isAdmin(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!isAdmin(req)) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
+  const archived = searchParams.get("archived"); // "true" | "false" | null
+  const limit = Math.min(parseInt(searchParams.get("limit") || "100", 10) || 100, 500);
 
   if (id) {
     const { data, error } = await supabase
@@ -30,106 +37,127 @@ export async function GET(req: Request) {
       .eq("id", id)
       .maybeSingle();
 
-    if (error) {
-      console.error("GET single inquiry error", error);
-      return NextResponse.json({ error: "Failed to fetch inquiry" }, { status: 500 });
-    }
-
-    if (!data) {
-      return NextResponse.json({ error: "Not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ inquiry: data });
+    if (error) return noStoreJson({ error: "Failed to fetch inquiry" }, { status: 500 });
+    if (!data) return noStoreJson({ error: "Not found" }, { status: 404 });
+    return noStoreJson({ inquiry: data });
   }
 
-  const { data, error } = await supabase
+  let q = supabase
     .from("tenant_inquiries")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(limit);
 
-  if (error) {
-    console.error("GET inquiries error", error);
-    return NextResponse.json({ error: "Failed to fetch inquiries" }, { status: 500 });
-  }
+  // Respect dashboard tabs
+  if (archived === "true") q = q.eq("is_archived", true).is("deleted_at", null);
+  if (archived === "false") q = q.eq("is_archived", false).is("deleted_at", null);
 
-  return NextResponse.json({ inquiries: data ?? [] });
+  const { data, error } = await q;
+  if (error) return noStoreJson({ error: "Failed to fetch inquiries" }, { status: 500 });
+
+  return noStoreJson({ inquiries: data ?? [] });
 }
 
-type PatchBody = {
-  id?: string;
-  status?: string;
-  action?: "quick_reply";
-  template?: "thanks" | "viewing" | "application";
-};
+type PatchBody =
+  | { action: "set_status"; ids: string[]; status: string }
+  | { action: "archive"; ids: string[] }
+  | { action: "unarchive"; ids: string[] }
+  | { action: "delete"; ids: string[] } // soft delete
+  | { action: "quick_reply"; id: string; template?: "thanks" | "viewing" | "application" }
+  | { id: string; status: string }; // legacy single update
 
 export async function PATCH(req: Request) {
-  if (!isAdmin(req)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!isAdmin(req)) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
 
   const body = (await req.json()) as PatchBody;
-  const { id, status, action, template = "thanks" } = body;
 
-  if (!id) {
-    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  // Legacy single status update
+  if ("id" in body && "status" in body && !("action" in body)) {
+    const { error } = await supabase.from("tenant_inquiries").update({ status: body.status }).eq("id", body.id);
+    if (error) return noStoreJson({ error: "Failed to update status" }, { status: 500 });
+    return noStoreJson({ ok: true });
   }
 
-  // status-only update
-  if (status && !action) {
+  // Bulk status update
+  if ("action" in body && body.action === "set_status") {
+    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
     const { error } = await supabase
       .from("tenant_inquiries")
-      .update({ status })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Update status error", error);
-      return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
-    }
-
-    return NextResponse.json({ ok: true });
+      .update({ status: body.status })
+      .in("id", body.ids);
+    if (error) return noStoreJson({ error: "Failed to update status" }, { status: 500 });
+    return noStoreJson({ ok: true });
   }
 
-  // quick reply + mark as contacted
-  if (action === "quick_reply") {
+  // Archive
+  if ("action" in body && body.action === "archive") {
+    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+    const { error } = await supabase
+      .from("tenant_inquiries")
+      .update({ is_archived: true, archived_at: new Date().toISOString() })
+      .in("id", body.ids);
+    if (error) return noStoreJson({ error: "Failed to archive" }, { status: 500 });
+    return noStoreJson({ ok: true });
+  }
+
+  // Unarchive
+  if ("action" in body && body.action === "unarchive") {
+    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+    const { error } = await supabase
+      .from("tenant_inquiries")
+      .update({ is_archived: false, archived_at: null })
+      .in("id", body.ids);
+    if (error) return noStoreJson({ error: "Failed to unarchive" }, { status: 500 });
+    return noStoreJson({ ok: true });
+  }
+
+  // Soft delete (only allow deleting archived inquiries if you want)
+  if ("action" in body && body.action === "delete") {
+    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+
+    // Optional safety: only delete archived
+    const { error } = await supabase
+      .from("tenant_inquiries")
+      .update({ deleted_at: new Date().toISOString() })
+      .in("id", body.ids)
+      .eq("is_archived", true);
+
+    if (error) return noStoreJson({ error: "Failed to delete" }, { status: 500 });
+    return noStoreJson({ ok: true });
+  }
+
+  // Quick reply (your existing flow)
+  if ("action" in body && body.action === "quick_reply") {
+    const id = body.id;
+    const template = body.template ?? "thanks";
+
     const { data, error } = await supabase
       .from("tenant_inquiries")
       .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    if (error || !data) {
-      console.error("Quick reply fetch error", error);
-      return NextResponse.json({ error: "Inquiry not found" }, { status: 404 });
-    }
+    if (error || !data) return noStoreJson({ error: "Inquiry not found" }, { status: 404 });
 
-    const toEmail = data.email as string | null;
+    const toEmail = (data.email as string | null) ?? null;
     const fullName = (data.full_name as string | null) ?? "there";
     const propertyName = "831 Partington Ave";
 
-    if (!toEmail) {
-      return NextResponse.json(
-        { error: "Inquiry has no email address" },
-        { status: 400 }
-      );
-    }
+    if (!toEmail) return noStoreJson({ error: "Inquiry has no email address" }, { status: 400 });
 
     let subject = "";
     let textBody = "";
-    let htmlBody = "";
 
     if (template === "viewing") {
       subject = `Viewing times for ${propertyName}`;
       textBody = `Hi ${fullName},
 
-Thank you for your interest in ${propertyName}. 
+Thank you for your interest in ${propertyName}.
 
 We’d be happy to arrange a viewing. Please reply with a few days / times that work for you over the next week, and we’ll confirm a slot.
 
 Best regards,
 Oasis International Real Estate Inc.`;
-
-      htmlBody = textBody.replace(/\n/g, "<br/>");
     } else if (template === "application") {
       subject = `Next steps for ${propertyName}`;
       textBody = `Hi ${fullName},
@@ -140,21 +168,16 @@ To move forward, we’ll need a completed rental application and supporting docu
 
 Best regards,
 Oasis International Real Estate Inc.`;
-
-      htmlBody = textBody.replace(/\n/g, "<br/>");
     } else {
-      // default "thanks" template
       subject = `We received your inquiry about ${propertyName}`;
       textBody = `Hi ${fullName},
 
-Thank you for your inquiry about ${propertyName}. 
+Thank you for your inquiry about ${propertyName}.
 
 We’ve received your details and will follow up shortly with available viewing times and next steps.
 
 Best regards,
 Oasis International Real Estate Inc.`;
-
-      htmlBody = textBody.replace(/\n/g, "<br/>");
     }
 
     try {
@@ -163,35 +186,15 @@ Oasis International Real Estate Inc.`;
         to: toEmail,
         subject,
         text: textBody,
-        html: htmlBody,
+        html: textBody.replace(/\n/g, "<br/>"),
       });
-    } catch (err) {
-      console.error("Quick reply email error", err);
-      return NextResponse.json(
-        { error: "Failed to send email" },
-        { status: 500 }
-      );
+    } catch {
+      return noStoreJson({ error: "Failed to send email" }, { status: 500 });
     }
 
-    const { error: updateError } = await supabase
-      .from("tenant_inquiries")
-      .update({ status: "contacted" })
-      .eq("id", id);
-
-    if (updateError) {
-      console.error("Quick reply status update error", updateError);
-      // still return ok (email already sent), but mention issue
-      return NextResponse.json(
-        { ok: true, warning: "Email sent but status update failed" },
-        { status: 200 }
-      );
-    }
-
-    return NextResponse.json({ ok: true });
+    await supabase.from("tenant_inquiries").update({ status: "contacted" }).eq("id", id);
+    return noStoreJson({ ok: true });
   }
 
-  return NextResponse.json(
-    { error: "Nothing to do with given payload" },
-    { status: 400 }
-  );
+  return noStoreJson({ error: "Unsupported action/payload" }, { status: 400 });
 }
