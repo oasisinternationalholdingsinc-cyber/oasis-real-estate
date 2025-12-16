@@ -3,9 +3,22 @@
 import Image from "next/image";
 import Link from "next/link";
 import Script from "next/script";
-import { NurBanner } from "./components/NurBanner";
 
 const BASE_URL = "https://www.oasisintlrealestate.com";
+
+// ✅ Listing config (single source of truth for the homepage card)
+const PARTINGTON = {
+  title: "831 Partington Ave – Windsor, ON",
+  href: "/properties/partington",
+  // ✅ Update anytime
+  rentText: "$2,400/month + utilities",
+  furnishedText: "Fully furnished option available",
+  subtitle:
+    "Modern 3-bedroom main unit with finished basement, fenced yard, and renovated interior. Minutes from the University of Windsor.",
+  imageSrc: "/images/partington/front-exterior-renovated.jpg",
+  imageAlt:
+    "Front view of 831 Partington Ave with landscaped planter and wood exterior.",
+};
 
 export default function OasisHomePage() {
   return (
@@ -61,17 +74,14 @@ export default function OasisHomePage() {
               <Link href="/properties" className="hover:text-amber-300">
                 Properties
               </Link>
-              <Link
-                href="/properties/partington"
-                className="hover:text-amber-300"
-              >
+              <Link href={PARTINGTON.href} className="hover:text-amber-300">
                 831 Partington
               </Link>
               <a href="#contact" className="hover:text-amber-300">
                 Contact
               </a>
               <Link
-                href="/properties/partington#inquire"
+                href={`${PARTINGTON.href}#partington-inquiry`}
                 className="rounded-full bg-amber-400 px-4 py-1.5 text-xs font-semibold text-black shadow-md shadow-amber-500/40 hover:bg-amber-300"
               >
                 Book a Viewing
@@ -106,7 +116,7 @@ export default function OasisHomePage() {
               {/* HERO CTAS */}
               <div className="mt-6 flex flex-wrap gap-3 text-xs">
                 <Link
-                  href="/properties/partington"
+                  href={PARTINGTON.href}
                   className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-[11px] font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300"
                 >
                   View 831 Partington
@@ -151,43 +161,58 @@ export default function OasisHomePage() {
             {/* RIGHT: FEATURED PROPERTY SNAPSHOT */}
             <div className="space-y-4">
               <Link
-                href="/properties/partington"
+                href={PARTINGTON.href}
                 className="group relative block overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-black shadow-[0_0_45px_rgba(251,191,36,0.35)]"
               >
                 <div className="relative h-64 w-full sm:h-72 md:h-80">
                   <Image
-                    src="/images/partington/front-exterior-renovated.jpg"
-                    alt="Front view of 831 Partington Ave with landscaped planter and wood exterior."
+                    src={PARTINGTON.imageSrc}
+                    alt={PARTINGTON.imageAlt}
                     fill
                     sizes="(min-width: 1024px) 420px, 100vw"
                     className="object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-110"
                   />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 </div>
 
+                {/* ✅ Featured label */}
                 <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-[10px] font-semibold text-amber-200">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
                   Featured Executive Rental
                 </div>
 
-                <div className="flex items-center justify-between px-4 pb-4 pt-3">
-                  <div>
-                    <p className="text-xs font-semibold text-amber-200">
-                      831 Partington Ave – Windsor, ON
-                    </p>
-                    <p className="text-[11px] text-slate-300">
-                      Modern 3-bedroom home with finished basement, fenced
-                      yard, and renovated interior. Minutes from the University
-                      of Windsor.
-                    </p>
-                  </div>
-                  <div className="hidden text-right text-[11px] text-slate-400 sm:block">
-                    <p className="font-semibold text-amber-200">
-                      View full listing
-                    </p>
-                    <p className="text-[10px] text-slate-500">
-                      Photos, details &amp; inquiry form
-                    </p>
+                {/* ✅ Price pill */}
+                <div className="absolute right-4 top-4 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-semibold text-black shadow-lg shadow-amber-500/40">
+                  {PARTINGTON.rentText}
+                </div>
+
+                <div className="px-4 pb-4 pt-3">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-semibold text-amber-200">
+                        {PARTINGTON.title}
+                      </p>
+                      <p className="mt-1 text-[11px] text-slate-300">
+                        {PARTINGTON.subtitle}
+                      </p>
+
+                      {/* ✅ Furnished line */}
+                      <p className="mt-2 text-[11px] text-slate-300">
+                        <span className="text-amber-200 font-semibold">
+                          Furnishing:
+                        </span>{" "}
+                        {PARTINGTON.furnishedText}
+                      </p>
+                    </div>
+
+                    <div className="hidden text-right text-[11px] text-slate-400 sm:block">
+                      <p className="font-semibold text-amber-200">
+                        View full listing
+                      </p>
+                      <p className="text-[10px] text-slate-500">
+                        Photos, details &amp; inquiry form
+                      </p>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -266,7 +291,7 @@ export default function OasisHomePage() {
                 <p className="mt-2 text-slate-300">
                   Start with the full photo tour and details for{" "}
                   <Link
-                    href="/properties/partington"
+                    href={PARTINGTON.href}
                     className="text-amber-300 hover:underline"
                   >
                     831 Partington
@@ -337,7 +362,7 @@ export default function OasisHomePage() {
 
                   <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
                     <Link
-                      href="/properties/partington#inquire"
+                      href={`${PARTINGTON.href}#partington-inquiry`}
                       className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-[11px] font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300"
                     >
                       Go to Partington Inquiry Form

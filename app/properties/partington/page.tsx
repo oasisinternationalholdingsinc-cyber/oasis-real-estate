@@ -6,6 +6,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { NurBanner } from "../../components/NurBanner";
 
+/* -------------------- Listing config -------------------- */
+
+const LISTING = {
+  addressLine: "831 Partington Ave · Windsor, ON N9B 2N9",
+  headline:
+    "Modern 3-bedroom main unit with finished basement & fenced yard",
+  subheadline:
+    "Executive-style living for families, professionals, and mature students near the University of Windsor.",
+  // ✅ PRICE GOES HERE
+  rentText: "$2,400/month + utilities",
+  // ✅ furnishing statement (no deception—just optional)
+  furnishedText: "Fully furnished option available (as shown in photos)",
+  leaseText: "12-month preferred · long-term tenancy",
+  unitText: "Main unit only · non-shared home",
+  utilitiesText: "Tenant pays utilities (high-efficiency systems)",
+};
+
 /* -------------------- Helpers -------------------- */
 
 type GalleryImage = {
@@ -39,7 +56,7 @@ function useFadeInOnView<T extends HTMLElement>() {
   return { ref, visible };
 }
 
-// 🔸 If you took more photos, just append them here with the same shape.
+// 🔸 Append photos here anytime
 const galleryImages: GalleryImage[] = [
   {
     src: "/images/partington/front-exterior-renovated.jpg",
@@ -98,9 +115,9 @@ const galleryImages: GalleryImage[] = [
   },
 ];
 
-// 🔸 If you have a video file or YouTube URL, plug it here.
-const WALKTHROUGH_VIDEO_MP4 = ""; // e.g. "/videos/partington-walkthrough.mp4"
-const WALKTHROUGH_VIDEO_YOUTUBE = ""; // e.g. "https://www.youtube.com/embed/XXXXXXXX"
+// Optional video
+const WALKTHROUGH_VIDEO_MP4 = "";
+const WALKTHROUGH_VIDEO_YOUTUBE = "";
 
 /* -------------------- Main Page -------------------- */
 
@@ -109,17 +126,13 @@ export default function PartingtonPage() {
   const [walkthroughPlaying, setWalkthroughPlaying] = useState(false);
   const [heroTiltStyle, setHeroTiltStyle] = useState<CSSProperties>({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<null | "success" | "error">(
-    null
-  );
+  const [submitStatus, setSubmitStatus] = useState<null | "success" | "error">(null);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
   /* ----- Walkthrough auto-play ----- */
   useEffect(() => {
     if (!walkthroughPlaying) return;
-    if (lightboxIndex === null) {
-      setLightboxIndex(0);
-    }
+    if (lightboxIndex === null) setLightboxIndex(0);
 
     const id = setInterval(() => {
       setLightboxIndex((prev) => {
@@ -144,17 +157,13 @@ export default function PartingtonPage() {
   const showPrev = (e?: MouseEvent) => {
     if (e) e.stopPropagation();
     setLightboxIndex((prev) =>
-      prev === null
-        ? 0
-        : (prev - 1 + galleryImages.length) % galleryImages.length
+      prev === null ? 0 : (prev - 1 + galleryImages.length) % galleryImages.length
     );
   };
 
   const showNext = (e?: MouseEvent) => {
     if (e) e.stopPropagation();
-    setLightboxIndex((prev) =>
-      prev === null ? 0 : (prev + 1) % galleryImages.length
-    );
+    setLightboxIndex((prev) => (prev === null ? 0 : (prev + 1) % galleryImages.length));
   };
 
   const startWalkthrough = () => {
@@ -163,14 +172,10 @@ export default function PartingtonPage() {
   };
 
   /* ----- Smooth scroll to inquiry ----- */
-  const scrollToInquiry = (
-    e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>
-  ) => {
+  const scrollToInquiry = (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
     e.preventDefault();
     const el = document.getElementById("partington-inquiry");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   /* ----- Hero tilt effect ----- */
@@ -216,18 +221,14 @@ export default function PartingtonPage() {
     if (!fullName || !email || !message) {
       setSubmitting(false);
       setSubmitStatus("error");
-      setSubmitMessage(
-        "Please fill in your name, email, and a short message before submitting."
-      );
+      setSubmitMessage("Please fill in your name, email, and a short message before submitting.");
       return;
     }
 
     try {
       const res = await fetch("/api/partington-inquiry", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName,
           email,
@@ -245,22 +246,16 @@ export default function PartingtonPage() {
       if (!res.ok) {
         console.error("Inquiry error:", data);
         setSubmitStatus("error");
-        setSubmitMessage(
-          "Something went wrong submitting your inquiry. Please try again or email us directly."
-        );
+        setSubmitMessage("Something went wrong submitting your inquiry. Please try again or email us directly.");
       } else {
         setSubmitStatus("success");
-        setSubmitMessage(
-          "Thank you — your inquiry has been received. We’ll follow up with next steps and available viewing times."
-        );
+        setSubmitMessage("Thank you — your inquiry has been received. We’ll follow up with next steps and available viewing times.");
         form.reset();
       }
     } catch (err) {
       console.error("Inquiry network error:", err);
       setSubmitStatus("error");
-      setSubmitMessage(
-        "We couldn't reach the server. Please check your connection or try again shortly."
-      );
+      setSubmitMessage("We couldn't reach the server. Please check your connection or try again shortly.");
     } finally {
       setSubmitting(false);
     }
@@ -300,7 +295,7 @@ export default function PartingtonPage() {
             <Link href="/" className="hover:text-amber-300">
               Oasis Home
             </Link>
-            <Link href="/#properties" className="hover:text-amber-300">
+            <Link href="/properties" className="hover:text-amber-300">
               All Properties
             </Link>
             <span className="rounded-full bg-amber-400/10 px-3 py-1 text-amber-200">
@@ -312,7 +307,7 @@ export default function PartingtonPage() {
         {/* Mobile back link */}
         <div className="mb-3 flex sm:hidden">
           <Link
-            href="/#properties"
+            href="/properties"
             className="inline-flex items-center gap-1 text-[11px] text-slate-400 hover:text-amber-300"
           >
             <span>← Back to all properties</span>
@@ -331,22 +326,34 @@ export default function PartingtonPage() {
           {/* Hero left */}
           <div className="w-full max-w-full">
             <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.24em] text-amber-300">
-              831 Partington Ave · Windsor, ON N9B 2N9
+              {LISTING.addressLine}
             </p>
 
             <h1 className="mt-2 max-w-full break-words text-[1.7rem] sm:text-3xl md:text-4xl font-semibold leading-snug text-slate-50">
-              Modern 3-bedroom main unit with finished basement & fenced yard
+              {LISTING.headline}
               <span className="mt-2 block text-[0.95rem] sm:text-[1.05rem] md:text-xl font-normal text-slate-200">
-                Executive-style living for families, professionals, and mature
-                students near the University of Windsor.
+                {LISTING.subheadline}
               </span>
             </h1>
+
+            {/* ✅ PRICE STRIP (high visibility, clean) */}
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] sm:text-xs">
+              <span className="rounded-full bg-amber-400 px-3 py-1 font-semibold text-black shadow-lg shadow-amber-500/40">
+                Rent: {LISTING.rentText}
+              </span>
+              <span className="rounded-full border border-amber-400/60 bg-black/60 px-3 py-1 text-amber-200">
+                {LISTING.furnishedText}
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-200">
+                {LISTING.leaseText}
+              </span>
+            </div>
 
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
               This is the{" "}
               <span className="font-semibold text-amber-200">
                 main unit of 831 Partington Ave
-              </span>
+              </span>{" "}
               — a carefully renovated home with upgraded mechanical systems,
               clean air and water, and a quiet, efficient SMARTAIR furnace. It
               is managed as a long-term asset by Oasis, not a short-term crash
@@ -386,6 +393,9 @@ export default function PartingtonPage() {
             {/* Quick chips */}
             <div className="mt-4 flex flex-wrap gap-2 text-[11px] sm:text-xs">
               <span className="rounded-full border border-amber-400/70 bg-black/70 px-3 py-1 text-amber-200">
+                {LISTING.unitText}
+              </span>
+              <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-200">
                 Main unit · 3 bedrooms + finished basement
               </span>
               <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-200">
@@ -395,7 +405,7 @@ export default function PartingtonPage() {
                 Driveway + street parking
               </span>
               <span className="rounded-full border border-slate-700 bg-slate-950/80 px-3 py-1 text-slate-200">
-                Tenant pays utilities (high-efficiency systems)
+                {LISTING.utilitiesText}
               </span>
             </div>
           </div>
@@ -420,6 +430,7 @@ export default function PartingtonPage() {
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
               </div>
+
               <div className="flex items-center justify-between px-4 pb-4 pt-3 text-[11px] text-slate-300">
                 <span>Front exterior · 1 of {galleryImages.length} photos</span>
                 <button
@@ -435,11 +446,9 @@ export default function PartingtonPage() {
             <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-[11px] text-slate-300">
               <p className="font-semibold text-amber-200">Who this home suits</p>
               <p className="mt-2">
-                Best suited for respectful, tidy tenants who appreciate a
-                well-looked-after space: families, professionals, or mature
-                students with stable income and good references. No smoking
-                inside the home; quiet enjoyment for you and the neighbours is
-                important.
+                Best suited for respectful, tidy tenants who appreciate a well-looked-after
+                space: families or professionals with stable income and good references.
+                No smoking inside the home; quiet enjoyment for you and the neighbours is important.
               </p>
             </div>
           </div>
@@ -465,8 +474,7 @@ export default function PartingtonPage() {
                 Photo Gallery
               </h2>
               <p className="mt-1 text-sm text-slate-300">
-                A full walk-through of the main unit at 831 Partington Ave. All
-                photos are of the actual home.
+                A full walk-through of the main unit at 831 Partington Ave. All photos are of the actual home.
               </p>
             </div>
             <button
@@ -515,10 +523,7 @@ export default function PartingtonPage() {
 
             <div className="mt-4 overflow-hidden rounded-2xl border border-slate-800 bg-black">
               {WALKTHROUGH_VIDEO_MP4 && (
-                <video
-                  controls
-                  className="w-full h-full max-h-[420px] object-cover"
-                >
+                <video controls className="w-full h-full max-h-[420px] object-cover">
                   <source src={WALKTHROUGH_VIDEO_MP4} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
@@ -552,8 +557,7 @@ export default function PartingtonPage() {
             Home Highlights – Main Unit
           </h2>
           <p className="mt-1 text-sm text-slate-300">
-            A renovated main unit with modern finishes, upgraded mechanicals,
-            and a layout that works for real life.
+            A renovated main unit with modern finishes, upgraded mechanicals, and a layout that works for real life.
           </p>
 
           <div className="mt-5 grid gap-5 text-xs sm:text-sm md:grid-cols-2">
@@ -577,14 +581,8 @@ export default function PartingtonPage() {
               <ul className="mt-2 space-y-1.5 text-slate-300">
                 <li>• Finished basement rec room / office space</li>
                 <li>• Laundry area with washer &amp; dryer in place</li>
-                <li>
-                  • New SMARTAIR high-efficiency furnace with commercial media
-                  air filter
-                </li>
-                <li>
-                  • Reverse osmosis (RO) drinking water system installed by
-                  Reliance, with dedicated faucet at the kitchen sink
-                </li>
+                <li>• New SMARTAIR high-efficiency furnace with commercial media air filter</li>
+                <li>• Reverse osmosis (RO) drinking water system installed by Reliance (dedicated faucet)</li>
                 <li>• Fenced backyard and front deck for outdoor time</li>
               </ul>
             </div>
@@ -603,44 +601,48 @@ export default function PartingtonPage() {
           <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
             Quick Facts – Main Unit
           </h2>
+
           <dl className="mt-4 grid gap-4 text-[11px] text-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <dt className="text-slate-500">Rent</dt>
+              <dd className="font-semibold text-amber-200">{LISTING.rentText}</dd>
+              <dd className="text-slate-300">{LISTING.furnishedText}</dd>
+            </div>
+
             <div>
               <dt className="text-slate-500">Home type</dt>
               <dd>Main unit of detached home · 3 bedrooms + finished basement</dd>
             </div>
+
             <div>
               <dt className="text-slate-500">Parking</dt>
               <dd>Driveway + street parking (subject to city rules)</dd>
             </div>
+
+            <div>
+              <dt className="text-slate-500">Lease &amp; utilities</dt>
+              <dd>{LISTING.leaseText}</dd>
+              <dd className="text-slate-300">{LISTING.utilitiesText}</dd>
+            </div>
+
             <div>
               <dt className="text-slate-500">Mechanical</dt>
-              <dd>
-                SMARTAIR high-efficiency furnace (2025) · media filter · smart
-                thermostat
-              </dd>
+              <dd>SMARTAIR high-efficiency furnace (2025) · media filter · smart thermostat</dd>
             </div>
+
             <div>
               <dt className="text-slate-500">Water system</dt>
               <dd>Reverse osmosis drinking water (Reliance installed)</dd>
             </div>
-            <div>
-              <dt className="text-slate-500">Lease &amp; utilities</dt>
-              <dd>12-month preferred · tenant pays utilities</dd>
-            </div>
+
             <div>
               <dt className="text-slate-500">Ideal tenants</dt>
-              <dd>
-                Families, professionals, or mature students; quiet, respectful
-                use only
-              </dd>
+              <dd>Families or professionals; quiet, respectful use only</dd>
             </div>
+
             <div>
-              <dt className="text-slate-500">Pets / smoking</dt>
+              <dt className="text-slate-500">Smoking / pets</dt>
               <dd>No smoking inside; pets considered case-by-case</dd>
-            </div>
-            <div>
-              <dt className="text-slate-500">Availability</dt>
-              <dd>Reach out for current availability &amp; rent</dd>
             </div>
           </dl>
         </section>
@@ -659,12 +661,9 @@ export default function PartingtonPage() {
             Book a Viewing / Request Details
           </h2>
           <p className="mt-1 text-sm text-slate-300">
-            Share a few details below and we&apos;ll follow up with available
-            times, next steps, and any questions about the{" "}
-            <span className="font-semibold text-amber-200">
-              main unit at 831 Partington Ave
-            </span>
-            .
+            Share a few details below and we&apos;ll follow up with available times, next steps,
+            and any questions about the{" "}
+            <span className="font-semibold text-amber-200">main unit at 831 Partington Ave</span>.
           </p>
 
           <form
@@ -684,6 +683,7 @@ export default function PartingtonPage() {
                   required
                 />
               </div>
+
               <div className="space-y-1">
                 <label className="text-[11px] text-slate-300" htmlFor="email">
                   Email
@@ -710,11 +710,9 @@ export default function PartingtonPage() {
                   className="w-full rounded-lg border border-slate-700 bg-black/40 px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-400"
                 />
               </div>
+
               <div className="space-y-1">
-                <label
-                  className="text-[11px] text-slate-300"
-                  htmlFor="moveInDate"
-                >
+                <label className="text-[11px] text-slate-300" htmlFor="moveInDate">
                   Preferred move-in date
                 </label>
                 <input
@@ -763,8 +761,8 @@ export default function PartingtonPage() {
                 className="mt-1 h-4 w-4 rounded border-slate-700 bg-black"
               />
               <span>
-                I understand this is an executive-style main unit and agree to
-                be contacted about availability, viewing times, and next steps.
+                I understand this is an executive-style main unit and agree to be contacted
+                about availability, viewing times, and next steps.
               </span>
             </label>
 
@@ -795,9 +793,8 @@ export default function PartingtonPage() {
             <div className="mt-3 space-y-1 text-[10px] text-slate-500">
               <p className="font-semibold">Screening note</p>
               <p>
-                This home is maintained to an executive standard. Income
-                verification, references, and credit checks may apply. We aim
-                for a quiet, respectful environment for all.
+                This home is maintained to an executive standard. Income verification, references,
+                and credit checks may apply. We aim for a quiet, respectful environment for all.
               </p>
             </div>
           </form>
@@ -806,14 +803,11 @@ export default function PartingtonPage() {
         {/* Footer */}
         <footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
           <p>
-            © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
-            Executive Rentals · Windsor, Ontario.
+            © {new Date().getFullYear()} Oasis International Real Estate Inc. · Executive Rentals · Windsor, Ontario.
           </p>
           <p className="mt-1">
-            Listing is for the{" "}
-            <span className="font-semibold">main unit only</span> at 831
-            Partington Ave. Details may change without notice; please inquire
-            for the most current information.
+            Listing is for the <span className="font-semibold">main unit only</span> at 831 Partington Ave.
+            Details may change without notice; please inquire for the most current information.
           </p>
         </footer>
       </div>
@@ -848,16 +842,16 @@ export default function PartingtonPage() {
                 sizes="(min-width:1024px) 800px, 100vw"
               />
             </div>
+
             <div className="flex items-center justify-between text-xs sm:text-sm">
               <div>
-                <p className="font-semibold">
-                  {galleryImages[lightboxIndex].label}
-                </p>
+                <p className="font-semibold">{galleryImages[lightboxIndex].label}</p>
                 <p className="text-slate-300">
                   Photo {lightboxIndex + 1} of {galleryImages.length}
                   {walkthroughPlaying && " · Walkthrough mode"}
                 </p>
               </div>
+
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -876,9 +870,7 @@ export default function PartingtonPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setWalkthroughPlaying(
-                      (prev) => !prev || lightboxIndex === null
-                    )
+                    setWalkthroughPlaying((prev) => !prev || lightboxIndex === null)
                   }
                   className="rounded-full border border-slate-600 bg-black/60 px-3 py-1 text-xs hover:border-amber-300 hover:text-amber-200"
                 >
