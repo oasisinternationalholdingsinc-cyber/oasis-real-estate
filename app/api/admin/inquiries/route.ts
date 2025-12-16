@@ -22,8 +22,7 @@ function noStoreJson(body: any, init?: ResponseInit) {
   return res;
 }
 
-/** -------------------- Types + guards (fixes TS build) -------------------- */
-
+/** -------------------- Types + guards -------------------- */
 type BulkSetStatusPayload = { action: "set_status"; ids: string[]; status: string };
 type ArchivePayload = { action: "archive"; ids: string[] };
 type UnarchivePayload = { action: "unarchive"; ids: string[] };
@@ -33,8 +32,6 @@ type QuickReplyPayload = {
   id: string;
   template?: "thanks" | "viewing" | "application";
 };
-
-// legacy single update (no action)
 type LegacySingleUpdatePayload = { id: string; status: string };
 
 type PatchPayload =
@@ -73,30 +70,15 @@ function isBulkSetStatus(x: unknown): x is BulkSetStatusPayload {
 }
 
 function isArchive(x: unknown): x is ArchivePayload {
-  return (
-    hasAction(x) &&
-    x.action === "archive" &&
-    Array.isArray(x.ids) &&
-    x.ids.every((v: any) => typeof v === "string")
-  );
+  return hasAction(x) && x.action === "archive" && Array.isArray(x.ids) && x.ids.every((v: any) => typeof v === "string");
 }
 
 function isUnarchive(x: unknown): x is UnarchivePayload {
-  return (
-    hasAction(x) &&
-    x.action === "unarchive" &&
-    Array.isArray(x.ids) &&
-    x.ids.every((v: any) => typeof v === "string")
-  );
+  return hasAction(x) && x.action === "unarchive" && Array.isArray(x.ids) && x.ids.every((v: any) => typeof v === "string");
 }
 
 function isDelete(x: unknown): x is DeletePayload {
-  return (
-    hasAction(x) &&
-    x.action === "delete" &&
-    Array.isArray(x.ids) &&
-    x.ids.every((v: any) => typeof v === "string")
-  );
+  return hasAction(x) && x.action === "delete" && Array.isArray(x.ids) && x.ids.every((v: any) => typeof v === "string");
 }
 
 function isQuickReply(x: unknown): x is QuickReplyPayload {
@@ -106,10 +88,9 @@ function isQuickReply(x: unknown): x is QuickReplyPayload {
     (x as any).template === "viewing" ||
     (x as any).template === "application";
 
-  return hasAction(x) && x.action === "quick_reply" && typeof x.id === "string" && okTemplate;
+  return hasAction(x) && x.action === "quick_reply" && typeof (x as any).id === "string" && okTemplate;
 }
-
-/** ------------------------------------------------------------------------ */
+/** -------------------------------------------------------- */
 
 export async function GET(req: Request) {
   if (!isAdmin(req)) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
@@ -119,25 +100,35 @@ export async function GET(req: Request) {
   const archived = searchParams.get("archived"); // "true" | "false" | null
   const limit = Math.min(parseInt(searchParams.get("limit") || "100", 10) || 100, 500);
 
+  // Single inquiry + conversation thread
   if (id) {
-    const { data, error } = await supabase
+    const { data: inquiry, error: inquiryErr } = await supabase
       .from("tenant_inquiries")
       .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    if (error) return noStoreJson({ error: "Failed to fetch inquiry" }, { status: 500 });
-    if (!data) return noStoreJson({ error: "Not found" }, { status: 404 });
-    return noStoreJson({ inquiry: data });
+    if (inquiryErr) return noStoreJson({ error: "Failed to fetch inquiry" }, { status: 500 });
+    if (!inquiry) return noStoreJson({ error: "Not found" }, { status: 404 });
+
+    const { data: messages, error: msgErr } = await supabase
+      .from("inquiry_messages")
+      .select("id,inquiry_id,direction,channel,sender_type,subject,body_text,created_at")
+      .eq("inquiry_id", id)
+      .order("created_at", { ascending: true });
+
+    if (msgErr) return noStoreJson({ error: "Failed to fetch messages" }, { status: 500 });
+
+    return noStoreJson({ inquiry, messages: messages ?? [] });
   }
 
+  // List view for dashboard tabs
   let q = supabase
     .from("tenant_inquiries")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  // Respect dashboard tabs
   if (archived === "true") q = q.eq("is_archived", true).is("deleted_at", null);
   if (archived === "false") q = q.eq("is_archived", false).is("deleted_at", null);
 
@@ -179,8 +170,6 @@ export async function PATCH(req: Request) {
 
   // Archive
   if (isArchive(body)) {
-    if (!body.ids.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
-
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ is_archived: true, archived_at: new Date().toISOString() })
@@ -192,8 +181,6 @@ export async function PATCH(req: Request) {
 
   // Unarchive
   if (isUnarchive(body)) {
-    if (!body.ids.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
-
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ is_archived: false, archived_at: null })
@@ -205,8 +192,6 @@ export async function PATCH(req: Request) {
 
   // Soft delete (only deletes archived rows)
   if (isDelete(body)) {
-    if (!body.ids.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
-
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ deleted_at: new Date().toISOString() })
@@ -217,23 +202,22 @@ export async function PATCH(req: Request) {
     return noStoreJson({ ok: true });
   }
 
-  // Quick reply
+  // Quick reply -> send + log outbound message
   if (isQuickReply(body)) {
-    const id = body.id;
+    const inquiryId = body.id;
     const template = body.template ?? "thanks";
 
-    const { data, error } = await supabase
+    const { data: inquiry, error } = await supabase
       .from("tenant_inquiries")
       .select("*")
-      .eq("id", id)
+      .eq("id", inquiryId)
       .maybeSingle();
 
-    if (error || !data) return noStoreJson({ error: "Inquiry not found" }, { status: 404 });
+    if (error || !inquiry) return noStoreJson({ error: "Inquiry not found" }, { status: 404 });
 
-    const toEmail = (data.email as string | null) ?? null;
-    const fullName = (data.full_name as string | null) ?? "there";
+    const toEmail = (inquiry.email as string | null) ?? null;
+    const fullName = (inquiry.full_name as string | null) ?? "there";
     const propertyName = "831 Partington Ave";
-
     if (!toEmail) return noStoreJson({ error: "Inquiry has no email address" }, { status: 400 });
 
     let subject = "";
@@ -283,7 +267,18 @@ Oasis International Real Estate Inc.`;
       return noStoreJson({ error: "Failed to send email" }, { status: 500 });
     }
 
-    await supabase.from("tenant_inquiries").update({ status: "contacted" }).eq("id", id);
+    // Log outbound message into conversation thread
+    await supabase.from("inquiry_messages").insert({
+      inquiry_id: inquiryId,
+      direction: "outbound",
+      channel: "email",
+      sender_type: "agent",
+      subject,
+      body_text: textBody,
+      raw: { template, provider: "resend" },
+    });
+
+    await supabase.from("tenant_inquiries").update({ status: "contacted" }).eq("id", inquiryId);
     return noStoreJson({ ok: true });
   }
 
