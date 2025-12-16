@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, FormEvent, MouseEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { NurBanner } from "../../../components/NurBanner";
+import { NurBanner } from "../../components/NurBanner";
 
 /* -------------------- Listing config -------------------- */
 
