@@ -22,6 +22,95 @@ function noStoreJson(body: any, init?: ResponseInit) {
   return res;
 }
 
+/** -------------------- Types + guards (fixes TS build) -------------------- */
+
+type BulkSetStatusPayload = { action: "set_status"; ids: string[]; status: string };
+type ArchivePayload = { action: "archive"; ids: string[] };
+type UnarchivePayload = { action: "unarchive"; ids: string[] };
+type DeletePayload = { action: "delete"; ids: string[] }; // soft delete
+type QuickReplyPayload = {
+  action: "quick_reply";
+  id: string;
+  template?: "thanks" | "viewing" | "application";
+};
+
+// legacy single update (no action)
+type LegacySingleUpdatePayload = { id: string; status: string };
+
+type PatchPayload =
+  | BulkSetStatusPayload
+  | ArchivePayload
+  | UnarchivePayload
+  | DeletePayload
+  | QuickReplyPayload
+  | LegacySingleUpdatePayload;
+
+function isObject(x: unknown): x is Record<string, any> {
+  return typeof x === "object" && x !== null;
+}
+
+function hasAction(x: unknown): x is Record<string, any> & { action: string } {
+  return isObject(x) && typeof x.action === "string";
+}
+
+function isLegacySingleUpdate(x: unknown): x is LegacySingleUpdatePayload {
+  return (
+    isObject(x) &&
+    !("action" in x) &&
+    typeof x.id === "string" &&
+    typeof x.status === "string"
+  );
+}
+
+function isBulkSetStatus(x: unknown): x is BulkSetStatusPayload {
+  return (
+    hasAction(x) &&
+    x.action === "set_status" &&
+    Array.isArray(x.ids) &&
+    x.ids.every((v: any) => typeof v === "string") &&
+    typeof x.status === "string"
+  );
+}
+
+function isArchive(x: unknown): x is ArchivePayload {
+  return (
+    hasAction(x) &&
+    x.action === "archive" &&
+    Array.isArray(x.ids) &&
+    x.ids.every((v: any) => typeof v === "string")
+  );
+}
+
+function isUnarchive(x: unknown): x is UnarchivePayload {
+  return (
+    hasAction(x) &&
+    x.action === "unarchive" &&
+    Array.isArray(x.ids) &&
+    x.ids.every((v: any) => typeof v === "string")
+  );
+}
+
+function isDelete(x: unknown): x is DeletePayload {
+  return (
+    hasAction(x) &&
+    x.action === "delete" &&
+    Array.isArray(x.ids) &&
+    x.ids.every((v: any) => typeof v === "string")
+  );
+}
+
+function isQuickReply(x: unknown): x is QuickReplyPayload {
+  const okTemplate =
+    !("template" in (x as any)) ||
+    (x as any).template === "thanks" ||
+    (x as any).template === "viewing" ||
+    (x as any).template === "application";
+
+  return hasAction(x) && x.action === "quick_reply" && typeof x.id === "string" && okTemplate;
+}
+
+/** ------------------------------------------------------------------------ */
+
 export async function GET(req: Request) {
   if (!isAdmin(req)) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
 
@@ -58,64 +147,66 @@ export async function GET(req: Request) {
   return noStoreJson({ inquiries: data ?? [] });
 }
 
-type PatchBody =
-  | { action: "set_status"; ids: string[]; status: string }
-  | { action: "archive"; ids: string[] }
-  | { action: "unarchive"; ids: string[] }
-  | { action: "delete"; ids: string[] } // soft delete
-  | { action: "quick_reply"; id: string; template?: "thanks" | "viewing" | "application" }
-  | { id: string; status: string }; // legacy single update
-
 export async function PATCH(req: Request) {
   if (!isAdmin(req)) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
 
-  const body = (await req.json()) as PatchBody;
+  const body: unknown = await req.json();
 
-  // Legacy single status update
-  if ("id" in body && "status" in body && !("action" in body)) {
-    const { error } = await supabase.from("tenant_inquiries").update({ status: body.status }).eq("id", body.id);
+  // Legacy single status update (no action)
+  if (isLegacySingleUpdate(body)) {
+    const { error } = await supabase
+      .from("tenant_inquiries")
+      .update({ status: body.status })
+      .eq("id", body.id);
+
     if (error) return noStoreJson({ error: "Failed to update status" }, { status: 500 });
     return noStoreJson({ ok: true });
   }
 
   // Bulk status update
-  if ("action" in body && body.action === "set_status") {
-    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+  if (isBulkSetStatus(body)) {
+    if (!body.ids.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+    if (!body.status) return noStoreJson({ error: "Missing status" }, { status: 400 });
+
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ status: body.status })
       .in("id", body.ids);
+
     if (error) return noStoreJson({ error: "Failed to update status" }, { status: 500 });
     return noStoreJson({ ok: true });
   }
 
   // Archive
-  if ("action" in body && body.action === "archive") {
-    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+  if (isArchive(body)) {
+    if (!body.ids.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ is_archived: true, archived_at: new Date().toISOString() })
       .in("id", body.ids);
+
     if (error) return noStoreJson({ error: "Failed to archive" }, { status: 500 });
     return noStoreJson({ ok: true });
   }
 
   // Unarchive
-  if ("action" in body && body.action === "unarchive") {
-    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+  if (isUnarchive(body)) {
+    if (!body.ids.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ is_archived: false, archived_at: null })
       .in("id", body.ids);
+
     if (error) return noStoreJson({ error: "Failed to unarchive" }, { status: 500 });
     return noStoreJson({ ok: true });
   }
 
-  // Soft delete (only allow deleting archived inquiries if you want)
-  if ("action" in body && body.action === "delete") {
-    if (!body.ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
+  // Soft delete (only deletes archived rows)
+  if (isDelete(body)) {
+    if (!body.ids.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
 
-    // Optional safety: only delete archived
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ deleted_at: new Date().toISOString() })
@@ -126,8 +217,8 @@ export async function PATCH(req: Request) {
     return noStoreJson({ ok: true });
   }
 
-  // Quick reply (your existing flow)
-  if ("action" in body && body.action === "quick_reply") {
+  // Quick reply
+  if (isQuickReply(body)) {
     const id = body.id;
     const template = body.template ?? "thanks";
 
