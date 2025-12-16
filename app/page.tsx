@@ -6,11 +6,10 @@ import Script from "next/script";
 
 const BASE_URL = "https://www.oasisintlrealestate.com";
 
-// ✅ Listing config (single source of truth for the homepage card)
-const PARTINGTON = {
+// Single source of truth for featured listing card
+const FEATURED = {
   title: "831 Partington Ave – Windsor, ON",
   href: "/properties/partington",
-  // ✅ Update anytime
   rentText: "$2,400/month + utilities",
   furnishedText: "Fully furnished option available",
   subtitle:
@@ -23,7 +22,7 @@ const PARTINGTON = {
 export default function OasisHomePage() {
   return (
     <>
-      {/* SEO / JSON-LD for the brand */}
+      {/* SEO / JSON-LD for brand */}
       <Script
         id="oasis-real-estate-jsonld"
         type="application/ld+json"
@@ -46,15 +45,14 @@ export default function OasisHomePage() {
       />
 
       <div className="min-h-screen w-full bg-black text-slate-100 overflow-x-hidden">
-        {/* Soft ambient glow */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/35 via-amber-500/8 to-transparent" />
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-amber-500/28 via-amber-500/8 to-transparent" />
 
-        {/* PAGE WRAPPER */}
-        <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-16 pt-16 sm:px-6 sm:pt-14 lg:px-8 lg:pt-10">
-          {/* NAVBAR */}
-          <header className="flex items-center justify-between gap-4 pb-4">
+        <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 pb-16 pt-14 sm:px-6 sm:pt-12 lg:px-8 lg:pt-10">
+          {/* Header (quiet frame) */}
+          <header className="flex items-center justify-between gap-4 pb-4 sm:pb-6">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-amber-300 to-amber-600 shadow-lg shadow-amber-500/40">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 via-amber-300 to-amber-600 shadow-lg shadow-amber-500/30">
                 <span className="text-sm font-semibold text-black">O</span>
               </div>
               <div>
@@ -74,71 +72,60 @@ export default function OasisHomePage() {
               <Link href="/properties" className="hover:text-amber-300">
                 Properties
               </Link>
-              <Link href={PARTINGTON.href} className="hover:text-amber-300">
+              <Link href={FEATURED.href} className="hover:text-amber-300">
                 831 Partington
               </Link>
               <a href="#contact" className="hover:text-amber-300">
                 Contact
               </a>
+
+              {/* Primary nav CTA stays, but links to listing (commitment happens there) */}
               <Link
-                href={`${PARTINGTON.href}#partington-inquiry`}
-                className="rounded-full bg-amber-400 px-4 py-1.5 text-xs font-semibold text-black shadow-md shadow-amber-500/40 hover:bg-amber-300"
+                href={`${FEATURED.href}#partington-inquiry`}
+                className="rounded-full bg-amber-400 px-4 py-1.5 text-xs font-semibold text-black shadow-md shadow-amber-500/30 hover:bg-amber-300"
               >
                 Book a Viewing
               </Link>
             </nav>
           </header>
 
-          {/* HERO SECTION */}
-          <section className="mt-4 grid w-full max-w-full gap-10 lg:mt-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1.05fr)] lg:items-center">
-            {/* LEFT: BRAND STORY */}
+          {/* HERO (launcher: recognition + trust + inevitable next step) */}
+          <section className="mt-2 grid w-full max-w-full gap-9 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:items-center">
+            {/* Left: simple message + ONE primary action */}
             <div className="w-full max-w-full">
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-300">
                 Executive Rentals · Owner-Operated
               </p>
 
               <h1 className="mt-3 max-w-full break-words text-3xl font-semibold leading-snug text-slate-50 sm:text-4xl">
-                <span className="block">
-                  Well-kept homes for tenants who care as much as we do.
-                </span>
-                <span className="mt-2 block text-[1.02rem] font-normal text-slate-200 sm:text-xl">
-                  Oasis International Real Estate Inc. · Windsor, Ontario
-                </span>
+                Well-kept homes for tenants who care as much as we do.
               </h1>
 
-              <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300">
-                Oasis homes are renovated, inspected, and maintained with pride.
-                We focus on long-term executive rentals for families,
-                professionals, and mature students who value cleanliness,
-                respect, and clear communication.
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
+                We renovate, inspect, and maintain our homes with pride — built
+                for long-term tenants who value cleanliness, respect, and clear
+                communication.
               </p>
 
-              {/* HERO CTAS */}
-              <div className="mt-6 flex flex-wrap gap-3 text-xs">
+              {/* One dominant action */}
+              <div className="mt-6 flex flex-wrap items-center gap-3">
                 <Link
-                  href={PARTINGTON.href}
-                  className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-[11px] font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300"
+                  href={FEATURED.href}
+                  className="inline-flex items-center justify-center rounded-full bg-amber-400 px-6 py-2.5 text-sm font-semibold text-black shadow-lg shadow-amber-500/35 hover:bg-amber-300"
                 >
-                  View 831 Partington
+                  View Featured Home
                 </Link>
-                <a
-                  href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-full border border-amber-400/70 bg-black/70 px-5 py-2 text-[11px] font-semibold text-amber-200 hover:bg-amber-500/10"
+
+                <Link
+                  href="/properties"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/60 px-5 py-2.5 text-sm font-medium text-slate-200 hover:border-amber-300 hover:text-amber-200"
                 >
-                  Download Application (PDF)
-                </a>
-                <a
-                  href="#contact"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-900/60 px-5 py-2 text-[11px] font-medium text-slate-200 hover:border-amber-400 hover:text-amber-200"
-                >
-                  Join Our Waitlist
-                </a>
+                  Browse Properties
+                </Link>
               </div>
 
-              {/* HERO QUICK PILLARS */}
-              <dl className="mt-7 grid gap-4 text-[11px] text-slate-300 sm:grid-cols-3">
+              {/* Quiet pillars (supporting, not competing) */}
+              <dl className="mt-8 grid gap-4 text-[11px] text-slate-300 sm:grid-cols-3">
                 <div>
                   <dt className="text-slate-500">Who we rent to</dt>
                   <dd className="font-medium">
@@ -158,16 +145,16 @@ export default function OasisHomePage() {
               </dl>
             </div>
 
-            {/* RIGHT: FEATURED PROPERTY SNAPSHOT */}
+            {/* Right: proof anchor (featured card) */}
             <div className="space-y-4">
               <Link
-                href={PARTINGTON.href}
-                className="group relative block overflow-hidden rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-black shadow-[0_0_45px_rgba(251,191,36,0.35)]"
+                href={FEATURED.href}
+                className="group relative block overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-950 to-black shadow-[0_0_35px_rgba(251,191,36,0.22)] hover:border-amber-400/60"
               >
                 <div className="relative h-64 w-full sm:h-72 md:h-80">
                   <Image
-                    src={PARTINGTON.imageSrc}
-                    alt={PARTINGTON.imageAlt}
+                    src={FEATURED.imageSrc}
+                    alt={FEATURED.imageAlt}
                     fill
                     sizes="(min-width: 1024px) 420px, 100vw"
                     className="object-cover transition duration-500 group-hover:scale-105 group-hover:brightness-110"
@@ -175,179 +162,136 @@ export default function OasisHomePage() {
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                 </div>
 
-                {/* ✅ Featured label */}
+                {/* Featured label (quiet) */}
                 <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-1 text-[10px] font-semibold text-amber-200">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.85)]" />
                   Featured Executive Rental
                 </div>
 
-                {/* ✅ Price pill */}
-                <div className="absolute right-4 top-4 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-semibold text-black shadow-lg shadow-amber-500/40">
-                  {PARTINGTON.rentText}
+                {/* Price pill (single strong pricing signal) */}
+                <div className="absolute right-4 top-4 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-semibold text-black shadow-md shadow-amber-500/25">
+                  {FEATURED.rentText}
                 </div>
 
                 <div className="px-4 pb-4 pt-3">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-semibold text-amber-200">
-                        {PARTINGTON.title}
-                      </p>
-                      <p className="mt-1 text-[11px] text-slate-300">
-                        {PARTINGTON.subtitle}
-                      </p>
+                  <p className="text-xs font-semibold text-amber-200">
+                    {FEATURED.title}
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-300">
+                    {FEATURED.subtitle}
+                  </p>
+                  <p className="mt-2 text-[11px] text-slate-300">
+                    <span className="text-amber-200 font-semibold">
+                      Furnishing:
+                    </span>{" "}
+                    {FEATURED.furnishedText}
+                  </p>
 
-                      {/* ✅ Furnished line */}
-                      <p className="mt-2 text-[11px] text-slate-300">
-                        <span className="text-amber-200 font-semibold">
-                          Furnishing:
-                        </span>{" "}
-                        {PARTINGTON.furnishedText}
-                      </p>
-                    </div>
-
-                    <div className="hidden text-right text-[11px] text-slate-400 sm:block">
-                      <p className="font-semibold text-amber-200">
-                        View full listing
-                      </p>
-                      <p className="text-[10px] text-slate-500">
-                        Photos, details &amp; inquiry form
-                      </p>
-                    </div>
-                  </div>
+                  <p className="mt-3 text-[11px] text-slate-400">
+                    Open full listing → photos, details, and viewing request form
+                  </p>
                 </div>
               </Link>
-
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-[11px] text-slate-300">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
-                  What “Oasis Standard” Means
-                </p>
-                <ul className="mt-2 space-y-1.5">
-                  <li>• Professionally cleaned and inspected between tenancies</li>
-                  <li>• Clear expectations around care, noise, and respect</li>
-                  <li>• Direct access to the owner for issues and repairs</li>
-                  <li>• No “slumlord” shortcuts – we live by our reputation</li>
-                </ul>
-              </div>
             </div>
           </section>
 
-          {/* WHY OASIS SECTION */}
-          <section className="mt-16">
+          {/* Divider */}
+          <div className="mt-10 h-px w-full overflow-hidden rounded-full bg-slate-900">
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/55 to-transparent" />
+          </div>
+
+          {/* Standards (below fold; fit module, not hero) */}
+          <section className="mt-10">
             <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-              Why Tenants Choose Oasis
+              The Oasis Standard
             </h2>
-            <p className="mt-1 text-sm text-slate-300">
-              We treat rental housing like a long-term partnership, not a
-              transaction.
+            <p className="mt-1 text-sm text-slate-300 max-w-2xl">
+              A premium, quiet rental experience built on care, clarity, and
+              consistent expectations — for tenants who value the same.
             </p>
 
             <div className="mt-5 grid gap-5 md:grid-cols-3">
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs">
                 <p className="text-[11px] font-semibold text-amber-200">
-                  Respectful, Screened Tenants
+                  Clean &amp; Inspected
                 </p>
                 <p className="mt-2 text-slate-300">
-                  We look for tenants who care about their environment:
-                  consistent income, good references, and a track record of
-                  caring for their homes.
+                  Professionally cleaned and checked between tenancies — no
+                  shortcuts.
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs">
                 <p className="text-[11px] font-semibold text-amber-200">
-                  Renovated &amp; Well-Maintained Homes
+                  Clear Expectations
                 </p>
                 <p className="mt-2 text-slate-300">
-                  Updated interiors, solid mechanics, and ongoing investment in
-                  the property – not just “good enough to rent”.
+                  Respect, reasonable noise, and property care — aligned from day
+                  one.
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs">
                 <p className="text-[11px] font-semibold text-amber-200">
-                  Clear Communication
+                  Direct Communication
                 </p>
                 <p className="mt-2 text-slate-300">
-                  You always know who you&apos;re dealing with. No giant call
-                  centres – just direct, respectful communication with the
-                  owner.
+                  You know who you’re dealing with — owner-operated, responsive,
+                  and respectful.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* HOW IT WORKS */}
-          <section className="mt-16">
+          {/* Process (short + calm) */}
+          <section className="mt-14">
             <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-              How the Process Works
+              How It Works
             </h2>
             <p className="mt-1 text-sm text-slate-300">
-              Simple, transparent steps from first contact to move-in.
+              Simple steps from viewing to move-in — no chaos, no surprises.
             </p>
 
             <div className="mt-5 grid gap-5 md:grid-cols-3">
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs">
                 <p className="text-[11px] font-semibold text-amber-200">
-                  1. View the Listing
+                  1. View the listing
                 </p>
                 <p className="mt-2 text-slate-300">
-                  Start with the full photo tour and details for{" "}
-                  <Link
-                    href={PARTINGTON.href}
-                    className="text-amber-300 hover:underline"
-                  >
-                    831 Partington
-                  </Link>
-                  . Make sure the layout, location, and style fit what you&apos;re
-                  looking for.
+                  Explore photos, details, and suitability notes for the home.
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs">
                 <p className="text-[11px] font-semibold text-amber-200">
-                  2. Book a Viewing &amp; Apply
+                  2. Request a viewing
                 </p>
                 <p className="mt-2 text-slate-300">
-                  Use the inquiry form on the property page and/or complete the{" "}
-                  <a
-                    href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-amber-300 hover:underline"
-                  >
-                    Oasis tenant application
-                  </a>
-                  . We&apos;ll follow up with available times and next steps.
+                  Use the property inquiry form — we respond with next steps and
+                  available times.
                 </p>
               </div>
               <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-xs">
                 <p className="text-[11px] font-semibold text-amber-200">
-                  3. Screening &amp; Move-In
+                  3. Screening &amp; move-in
                 </p>
                 <p className="mt-2 text-slate-300">
-                  Standard income, reference, and credit checks may apply. Once
-                  approved, we sign the lease, review expectations, and hand you
-                  the keys to a clean, ready home.
+                  Standard verification may apply. Once approved, we sign, align
+                  expectations, and hand over a clean home.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* CONTACT / WAITLIST */}
+          {/* Contact / Waitlist (conversion lives near bottom) */}
           <section id="contact" className="mt-16">
-            <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-br from-slate-950 via-slate-950 to-black px-5 py-6 shadow-[0_0_40px_rgba(251,191,36,0.22)] sm:px-7 sm:py-7">
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/70 px-5 py-6 sm:px-7 sm:py-7">
               <div className="grid gap-7 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:items-start">
                 <div>
                   <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                    Join the Oasis Waitlist
+                    Contact / Waitlist
                   </h2>
                   <p className="mt-1 text-sm text-slate-300">
-                    Interested in 831 Partington or future Oasis properties in
-                    Windsor? Share a few details and we&apos;ll keep you posted
-                    when options match what you&apos;re looking for.
-                  </p>
-
-                  <p className="mt-4 text-xs text-slate-300">
-                    For now, we keep this simple: send us an email with your
-                    name, desired move-in date, and who would be living in the
-                    home. We&apos;ll respond personally.
+                    Interested in the featured home or future Oasis rentals?
+                    Email us your name, desired move-in date, and who would be
+                    living in the home — we’ll respond personally.
                   </p>
 
                   <div className="mt-4 space-y-1 text-xs">
@@ -360,12 +304,13 @@ export default function OasisHomePage() {
                     </a>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2 text-[11px]">
+                  {/* Late-stage actions here, not hero */}
+                  <div className="mt-5 flex flex-wrap gap-2 text-[11px]">
                     <Link
-                      href={`${PARTINGTON.href}#partington-inquiry`}
-                      className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-[11px] font-semibold text-black shadow-lg shadow-amber-500/40 hover:bg-amber-300"
+                      href={`${FEATURED.href}#partington-inquiry`}
+                      className="inline-flex items-center justify-center rounded-full bg-amber-400 px-5 py-2 text-[11px] font-semibold text-black shadow-lg shadow-amber-500/30 hover:bg-amber-300"
                     >
-                      Go to Partington Inquiry Form
+                      Request a Viewing
                     </Link>
                     <a
                       href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
@@ -378,33 +323,26 @@ export default function OasisHomePage() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-amber-500/40 bg-black/60 p-4 text-[11px] text-slate-300">
+                <div className="rounded-2xl border border-slate-800 bg-black/40 p-4 text-[11px] text-slate-300">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-300">
-                    Our Commitment to Tenants
-                  </p>
-                  <p className="mt-2">
-                    We&apos;re building Oasis for the long term. That means:
+                    Our Commitment
                   </p>
                   <ul className="mt-3 space-y-1.5">
-                    <li>• No surprise rent hikes mid-lease</li>
-                    <li>• Reasonable, evidence-based standards for care</li>
-                    <li>• Honest expectations on both sides from day one</li>
-                    <li>• Homes that we&apos;d be proud to live in ourselves</li>
+                    <li>• Honest expectations from day one</li>
+                    <li>• Reasonable, evidence-based standards</li>
+                    <li>• Respectful communication and responsiveness</li>
+                    <li>• Homes we’re proud to stand behind</li>
                   </ul>
-                  <p className="mt-3 text-[10px] text-slate-500">
-                    If you treat your home with respect and want a landlord who
-                    does the same in return, we built this for you.
-                  </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* FOOTER */}
+          {/* Footer */}
           <footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
             <p>
-              © {new Date().getFullYear()} Oasis International Real Estate Inc.
-              · Executive Rentals · Windsor, Ontario.
+              © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
+              Executive Rentals · Windsor, Ontario.
             </p>
             <p className="mt-1">
               Oasis International Real Estate Inc. operates separately from the
