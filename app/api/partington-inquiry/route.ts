@@ -289,11 +289,14 @@ ${message}
         `;
 
         const sendAuto = await resend.emails.send({
-          from: `Nūr El-Oasis <notifications@oasisintlrealestate.com>`,
-          to: email,
-          subject: "Thanks for your inquiry about 831 Partington Ave",
-          html: autoReplyHtml,
-        });
+  from: `Nūr El-Oasis <notifications@oasisintlrealestate.com>`,
+  to: email,
+  bcc: "oasisintlrealestate@gmail.com", // 👈 you get a silent copy of every Nur reply
+  replyTo: "oasisintlrealestate@gmail.com", // optional: keeps tenant replies going to your inbox
+  subject: "Thanks for your inquiry about 831 Partington Ave",
+  html: autoReplyHtml,
+});
+
 
         if (!sendAuto.error) {
           autoReplySent = true;
