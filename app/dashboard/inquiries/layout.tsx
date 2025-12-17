@@ -13,35 +13,57 @@ export default function InquiriesLayout({
   intel: ReactNode;
 }) {
   return (
-    <div className="min-h-[calc(100vh-0px)] bg-black text-white">
-      {/* Oasis OS console grid */}
-      <div className="mx-auto max-w-[1800px] px-4 py-6">
-        <div className="grid grid-cols-12 gap-4">
-          {/* LEFT: Inquiry List */}
-          <div className="col-span-12 lg:col-span-4 xl:col-span-3">
-            <div className="h-[calc(100vh-120px)] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-              <div className="h-full overflow-auto">{list}</div>
+    <div className="min-h-[calc(100vh-14rem)]">
+      {/* Council Grid */}
+      <div className="grid grid-cols-12 gap-4">
+        {/* LEFT: Register */}
+        <section className="col-span-12 lg:col-span-4 xl:col-span-3">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+            <div className="px-4 py-3 border-b border-white/10 bg-black/30">
+              <div className="text-sm font-semibold tracking-wide">
+                Matters Register
+              </div>
+              <div className="text-xs text-white/50">
+                Active • Archived • Bulk Actions
+              </div>
             </div>
+            <div className="h-[calc(100vh-18rem)] overflow-auto">{list}</div>
           </div>
+        </section>
 
-          {/* MIDDLE: Thread */}
-          <div className="col-span-12 lg:col-span-5 xl:col-span-6">
-            <div className="h-[calc(100vh-120px)] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-              <div className="h-full overflow-auto">{thread}</div>
+        {/* MIDDLE: Record */}
+        <section className="col-span-12 lg:col-span-5 xl:col-span-6">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+            <div className="px-4 py-3 border-b border-white/10 bg-black/30">
+              <div className="text-sm font-semibold tracking-wide">
+                Matter Record
+              </div>
+              <div className="text-xs text-white/50">
+                Thread • Operator actions • Timeline
+              </div>
             </div>
+            <div className="h-[calc(100vh-18rem)] overflow-hidden">{thread}</div>
           </div>
+        </section>
 
-          {/* RIGHT: Intel */}
-          <div className="col-span-12 lg:col-span-3">
-            <div className="h-[calc(100vh-120px)] overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
-              <div className="h-full overflow-auto">{intel}</div>
+        {/* RIGHT: Brief */}
+        <section className="col-span-12 lg:col-span-3">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03]">
+            <div className="px-4 py-3 border-b border-white/10 bg-black/30">
+              <div className="text-sm font-semibold tracking-wide">
+                Axiom Brief
+              </div>
+              <div className="text-xs text-white/50">
+                Signals • Risk • Next actions
+              </div>
             </div>
+            <div className="h-[calc(100vh-18rem)] overflow-auto">{intel}</div>
           </div>
-        </div>
-
-        {/* keep children mounted (not used visually, but keeps Next happy) */}
-        <div className="hidden">{children}</div>
+        </section>
       </div>
+
+      {/* keep children mounted */}
+      <div className="hidden">{children}</div>
     </div>
   );
 }

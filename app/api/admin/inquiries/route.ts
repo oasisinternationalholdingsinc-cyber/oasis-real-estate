@@ -1,37 +1,12 @@
-// app/api/admin/inquiries/route.ts
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
 /**
- * IMPORTANT:
- * - Do NOT instantiate Resend at module import time.
- * - Next build evaluates route modules during "collecting page data".
- * - If RESEND_API_KEY isn't set at build time, build must still succeed.
+ * Build-safe route module:
+ * - NO env-dependent constructors at import time
+ * - Next build may evaluate route modules while collecting data
  */
-
-function getResend() {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) return null;
-  return new Resend(key);
-}
-
-function getSupabase() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
-  if (!serviceKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
-
-  return createClient(url, serviceKey, { auth: { persistSession: false } });
-}
-
-const supabase = getSupabase();
-
-function isAdmin(req: Request) {
-  const cookie = req.headers.get("cookie") || "";
-  return cookie.includes("oasis_admin=1");
-}
 
 function noStoreJson(body: any, init?: ResponseInit) {
   const res = NextResponse.json(body, init);
@@ -39,20 +14,49 @@ function noStoreJson(body: any, init?: ResponseInit) {
   return res;
 }
 
-async function logMessage(args: {
-  inquiry_id: string;
-  direction: "inbound" | "outbound";
-  channel: "form" | "email";
-  sender_type: "tenant" | "oasis" | "system";
-  body_text: string;
-  subject?: string | null;
-  from_email?: string | null;
-  to_email?: string | null;
-  provider?: string | null;
-  provider_message_id?: string | null;
-  delivery_status?: string | null;
-  meta?: any;
-}) {
+function isAdmin(req: Request) {
+  const cookie = req.headers.get("cookie") || "";
+  return cookie.includes("oasis_admin=1");
+}
+
+function getSupabaseOrResponse():
+  | { ok: true; supabase: SupabaseClient }
+  | { ok: false; res: NextResponse } {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url) return { ok: false, res: noStoreJson({ error: "Missing NEXT_PUBLIC_SUPABASE_URL" }, { status: 500 }) };
+  if (!serviceKey) return { ok: false, res: noStoreJson({ error: "Missing SUPABASE_SERVICE_ROLE_KEY" }, { status: 500 }) };
+
+  const supabase = createClient(url, serviceKey, { auth: { persistSession: false } });
+  return { ok: true, supabase };
+}
+
+function getResendOrResponse():
+  | { ok: true; resend: Resend }
+  | { ok: false; res: NextResponse } {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { ok: false, res: noStoreJson({ error: "Missing RESEND_API_KEY" }, { status: 500 }) };
+  return { ok: true, resend: new Resend(key) };
+}
+
+async function logMessage(
+  supabase: SupabaseClient,
+  args: {
+    inquiry_id: string;
+    direction: "inbound" | "outbound";
+    channel: "form" | "email";
+    sender_type: "tenant" | "oasis" | "system";
+    body_text: string;
+    subject?: string | null;
+    from_email?: string | null;
+    to_email?: string | null;
+    provider?: string | null;
+    provider_message_id?: string | null;
+    delivery_status?: string | null;
+    meta?: any;
+  }
+) {
   const { error } = await supabase.from("inquiry_messages").insert({
     inquiry_id: args.inquiry_id,
     direction: args.direction,
@@ -73,6 +77,10 @@ async function logMessage(args: {
 
 export async function GET(req: Request) {
   if (!isAdmin(req)) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
+
+  const sb = getSupabaseOrResponse();
+  if (!sb.ok) return sb.res;
+  const supabase = sb.supabase;
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
@@ -117,6 +125,10 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   if (!isAdmin(req)) return noStoreJson({ error: "Unauthorized" }, { status: 401 });
+
+  const sb = getSupabaseOrResponse();
+  if (!sb.ok) return sb.res;
+  const supabase = sb.supabase;
 
   const raw = await req.json().catch(() => null);
   if (!raw || typeof raw !== "object") return noStoreJson({ error: "Invalid JSON" }, { status: 400 });
@@ -170,7 +182,6 @@ export async function PATCH(req: Request) {
       return noStoreJson({ ok: true });
     }
 
-    // soft delete (only archived)
     const { error } = await supabase
       .from("tenant_inquiries")
       .update({ deleted_at: new Date().toISOString() })
@@ -198,10 +209,9 @@ export async function PATCH(req: Request) {
 
   // Reply from dashboard → send + log
   if (action === "reply") {
-    const resend = getResend();
-    if (!resend) {
-      return noStoreJson({ error: "Missing RESEND_API_KEY" }, { status: 500 });
-    }
+    const rs = getResendOrResponse();
+    if (!rs.ok) return rs.res;
+    const resend = rs.resend;
 
     const id = (raw as any).id as string | undefined;
     const subject = ((raw as any).subject as string | undefined) ?? "";
@@ -218,7 +228,7 @@ export async function PATCH(req: Request) {
 
     if (error || !inquiry) return noStoreJson({ error: "Inquiry not found" }, { status: 404 });
 
-    const toEmail = (inquiry.email as string | null) ?? null;
+    const toEmail = (inquiry as any).email as string | null;
     if (!toEmail) return noStoreJson({ error: "Inquiry has no email address" }, { status: 400 });
 
     const fromEmail = "Oasis International Real Estate <notifications@oasisintlrealestate.com>";
@@ -239,7 +249,7 @@ export async function PATCH(req: Request) {
 
       providerMessageId = (sent as any)?.data?.id ?? (sent as any)?.id ?? null;
 
-      await logMessage({
+      await logMessage(supabase, {
         inquiry_id: id,
         direction: "outbound",
         channel: "email",
@@ -254,14 +264,12 @@ export async function PATCH(req: Request) {
         meta: { source: "dashboard" },
       });
     } catch (e: any) {
-      // Do not leak internals, but give enough to debug.
       return noStoreJson(
         { error: "Failed to send email", detail: e?.message ? String(e.message) : undefined },
         { status: 500 }
       );
     }
 
-    // Optional: bump status to contacted if still new
     if (String((inquiry as any).status || "").toLowerCase() === "new") {
       await supabase.from("tenant_inquiries").update({ status: "contacted" }).eq("id", id);
     }

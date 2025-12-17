@@ -1,33 +1,60 @@
+// app/api/inquiries/reply/route.ts
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+function getSupabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVER_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  return createClient(url, key, { auth: { persistSession: false } });
+}
 
 export async function POST(req: Request) {
-  const cookie = req.headers.get("cookie") || "";
-  if (!cookie.includes("oasis_admin=1")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  try {
+    const { inquiry_id, message } = (await req.json()) as {
+      inquiry_id?: string;
+      message?: string;
+    };
 
-  const body = await req.json().catch(() => null);
-  if (!body || !body.inquiry_id || !body.message) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-  }
-
-  // Forward to the real admin endpoint
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_SITE_URL || ""}/api/admin/inquiries`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        cookie, // forward admin cookie
-      },
-      body: JSON.stringify({
-        action: "reply",
-        id: body.inquiry_id,
-        body: body.message,
-      }),
+    if (!inquiry_id || !message?.trim()) {
+      return NextResponse.json(
+        { error: "Missing inquiry_id or message." },
+        { status: 400 }
+      );
     }
-  );
 
-  const data = await res.json();
-  return NextResponse.json(data, { status: res.status });
+    const supabase = getSupabaseAdmin();
+
+    // Try the same table candidates your thread reader uses
+    const candidates = ["tenant_inquiry_messages", "inquiry_messages", "messages"];
+
+    let lastErr: any = null;
+
+    for (const table of candidates) {
+      const { error } = await supabase.from(table).insert({
+        inquiry_id,
+        role: "owner",
+        content: message.trim(),
+      });
+
+      if (!error) {
+        return NextResponse.json({ ok: true, table });
+      }
+
+      lastErr = error;
+    }
+
+    return NextResponse.json(
+      { error: lastErr?.message || "No messages table matched for insert." },
+      { status: 500 }
+    );
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: e?.message || "Unknown error." },
+      { status: 500 }
+    );
+  }
 }

@@ -1,3 +1,4 @@
+// app/dashboard/inquiries/[id]/composer.tsx
 "use client";
 
 import { useState } from "react";
@@ -7,7 +8,7 @@ export default function Composer({ inquiryId }: { inquiryId: string }) {
   const [sending, setSending] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  async function send() {
+  async function issue() {
     const body = text.trim();
     if (!body) return;
 
@@ -29,36 +30,34 @@ export default function Composer({ inquiryId }: { inquiryId: string }) {
       setText("");
       window.location.reload();
     } catch (e: any) {
-      setErr(e?.message || "Failed to send.");
+      setErr(e?.message || "Failed to issue response.");
     } finally {
       setSending(false);
     }
   }
 
   return (
-    <div className="border-t border-white/10 p-3 bg-black/30">
-      {err ? (
-        <div className="mb-2 text-xs text-red-300">
-          {err.includes("404")
-            ? "Reply API not found yet (/api/inquiries/reply). UI is restored though."
-            : err}
-        </div>
-      ) : null}
+    <div className="border-t border-white/10 bg-black/30 p-3">
+      {err ? <div className="mb-2 text-xs text-rose-200">{err}</div> : null}
+
+      <div className="mb-2 text-[11px] text-slate-400">
+        Draft response (logged to record)
+      </div>
 
       <div className="flex gap-2">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Continue the thread…"
+          placeholder="Draft response…"
           rows={2}
           className="flex-1 resize-none rounded-xl bg-black/40 border border-white/10 px-3 py-2 text-sm outline-none focus:border-white/20"
         />
         <button
-          onClick={send}
+          onClick={issue}
           disabled={sending || !text.trim()}
           className="rounded-xl px-3 py-2 text-sm border border-white/10 bg-white/10 hover:bg-white/15 disabled:opacity-40"
         >
-          {sending ? "Sending…" : "Send"}
+          {sending ? "Issuing…" : "Issue"}
         </button>
       </div>
     </div>
