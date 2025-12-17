@@ -1,192 +1,279 @@
+// app/dashboard/inquiries/[id]/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { AdminShell } from "../../../components/AdminShell";
 
-type TenantInquiry = {
+type Inquiry = {
   id: string;
-  created_at: string;
   full_name: string | null;
   email: string | null;
   phone: string | null;
-  household: string | null;
+  group_type: string | null;
   move_in_date: string | null;
-  about: string | null;
+  property_slug: string | null;
   status: string | null;
-};
-
-type InquiryMessage = {
-  id: string;
-  inquiry_id: string;
-  direction: "inbound" | "outbound" | string;
-  channel: "form" | "email" | string;
-  sender_type: "tenant" | "agent" | "system" | string;
-  subject?: string | null;
-  body_text: string | null;
+  internal_notes?: string | null;
   created_at: string;
 };
 
-function formatDateTime(iso: string | null) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return d.toLocaleString("en-CA", { dateStyle: "medium", timeStyle: "short" });
-}
-
-function badgeFor(msg: InquiryMessage) {
-  const dir = (msg.direction || "").toLowerCase();
-  const ch = (msg.channel || "").toLowerCase();
-  if (dir === "inbound" && ch === "form") return "Form • Inbound";
-  if (dir === "outbound" && ch === "email") return "Email • Outbound";
-  if (dir === "inbound" && ch === "email") return "Email • Inbound";
-  return `${msg.channel || "msg"} • ${msg.direction || ""}`.trim();
-}
+type Msg = {
+  id: string;
+  inquiry_id: string;
+  direction: "inbound" | "outbound";
+  channel: "form" | "email";
+  sender_type: "tenant" | "oasis" | "system";
+  subject: string | null;
+  body_text: string;
+  from_email: string | null;
+  to_email: string | null;
+  created_at: string;
+};
 
 export default function InquiryDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [inquiry, setInquiry] = useState<TenantInquiry | null>(null);
-  const [messages, setMessages] = useState<InquiryMessage[]>([]);
+  const id = params?.id;
+
   const [loading, setLoading] = useState(true);
+  const [inquiry, setInquiry] = useState<Inquiry | null>(null);
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const [replySubject, setReplySubject] = useState("");
+  const [replyBody, setReplyBody] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const [notes, setNotes] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
+
+  const title = useMemo(() => inquiry?.full_name || "Inquiry", [inquiry]);
+
+  async function load() {
+    if (!id) return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/admin/inquiries?id=${encodeURIComponent(id)}`, {
+        cache: "no-store",
+        credentials: "include",
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Failed to load");
+
+      setInquiry(json.inquiry);
+      setMessages(json.messages || []);
+      setNotes(json.inquiry?.internal_notes || "");
+
+      // nice default subject
+      if (!replySubject) {
+        const prop = json.inquiry?.property_slug ? String(json.inquiry.property_slug) : "your inquiry";
+        setReplySubject(`Re: ${prop} — Oasis International Real Estate`);
+      }
+    } catch (e: any) {
+      setError(e?.message || "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    if (!id) return;
-
-    async function load() {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/admin/inquiries?id=${id}`, { cache: "no-store" });
-        if (!res.ok) {
-          console.error("Failed to fetch inquiry");
-          setInquiry(null);
-          setMessages([]);
-          return;
-        }
-        const data = await res.json();
-        setInquiry(data.inquiry ?? null);
-        setMessages(Array.isArray(data.messages) ? data.messages : []);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const hasThread = useMemo(() => messages.length > 0, [messages]);
+  async function sendReply() {
+    if (!inquiry?.id) return;
+    if (!replyBody.trim()) {
+      alert("Message is empty.");
+      return;
+    }
+
+    setSending(true);
+    try {
+      const res = await fetch("/api/admin/inquiries", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          action: "reply",
+          id: inquiry.id,
+          subject: replySubject,
+          body: replyBody,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Failed to send");
+
+      setReplyBody("");
+      await load(); // refresh thread
+    } catch (e: any) {
+      alert(e?.message || "Failed to send");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function saveInternalNotes() {
+    if (!inquiry?.id) return;
+    setSavingNotes(true);
+    try {
+      const res = await fetch("/api/admin/inquiries", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ action: "set_notes", id: inquiry.id, notes }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Failed to save notes");
+
+      await load();
+    } catch (e: any) {
+      alert(e?.message || "Failed to save notes");
+    } finally {
+      setSavingNotes(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="mx-auto max-w-6xl px-6 py-10 opacity-70">Loading…</div>
+      </div>
+    );
+  }
+
+  if (error || !inquiry) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <div className="mx-auto max-w-6xl px-6 py-10">
+          <div className="mb-4 text-sm opacity-70">Dashboard</div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="text-xl font-semibold">Couldn’t load inquiry</div>
+            <div className="mt-2 text-sm opacity-70">{error || "Unknown error"}</div>
+            <button
+              className="mt-5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
+              onClick={() => router.push("/dashboard/inquiries")}
+            >
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <AdminShell>
-      <button
-        type="button"
-        onClick={() => router.push("/dashboard/inquiries")}
-        className="mb-4 text-xs text-slate-400 hover:text-amber-300"
-      >
-        ← Back to inquiries
-      </button>
+    <div className="min-h-screen bg-black text-white">
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <button
+          className="mb-6 text-sm opacity-70 hover:opacity-100"
+          onClick={() => router.push("/dashboard/inquiries")}
+        >
+          ← Back to inquiries
+        </button>
 
-      {loading && <p className="text-sm text-slate-400">Loading inquiry…</p>}
-      {!loading && !inquiry && <p className="text-sm text-rose-400">Inquiry not found.</p>}
+        <div className="mb-2 text-4xl font-semibold">{title}</div>
+        <div className="mb-8 text-sm opacity-70">
+          Submitted {new Date(inquiry.created_at).toLocaleString()}
+        </div>
 
-      {!loading && inquiry && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-50">
-              {inquiry.full_name || "Tenant inquiry"}
-            </h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Submitted {formatDateTime(inquiry.created_at)}
-            </p>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Contact */}
-            <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 text-sm">
-              <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Contact details
-              </h2>
-              <p>
-                <span className="text-slate-400">Email: </span>
-                {inquiry.email || "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Phone: </span>
-                {inquiry.phone || "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Household: </span>
-                {inquiry.household || "—"}
-              </p>
-              <p>
-                <span className="text-slate-400">Preferred move-in: </span>
-                {inquiry.move_in_date
-                  ? new Date(inquiry.move_in_date).toLocaleDateString("en-CA", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })
-                  : "—"}
-              </p>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* Contact */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="mb-4 text-sm tracking-[0.2em] opacity-60">CONTACT DETAILS</div>
+            <div className="space-y-2 text-sm">
+              <div>Email: <span className="font-medium">{inquiry.email || "—"}</span></div>
+              <div>Phone: <span className="font-medium">{inquiry.phone || "—"}</span></div>
+              <div>Household: <span className="font-medium">{inquiry.group_type || "—"}</span></div>
+              <div>Preferred move-in: <span className="font-medium">{inquiry.move_in_date || "—"}</span></div>
+              <div>Status: <span className="font-medium">{inquiry.status || "—"}</span></div>
             </div>
 
-            {/* Thread */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Messages
-                </h2>
-                <span className="text-xs text-slate-500">{hasThread ? `${messages.length} msg` : "—"}</span>
+            <div className="mt-6 border-t border-white/10 pt-5">
+              <div className="mb-2 text-sm tracking-[0.2em] opacity-60">INTERNAL NOTES</div>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Internal notes (not visible to tenant)…"
+                className="h-28 w-full resize-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none focus:border-yellow-400/40"
+              />
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={saveInternalNotes}
+                  disabled={savingNotes}
+                  className="rounded-full bg-yellow-400 px-5 py-2 text-sm font-semibold text-black hover:brightness-110 disabled:opacity-60"
+                >
+                  {savingNotes ? "Saving…" : "Save Notes"}
+                </button>
+                <div className="text-xs opacity-60">Saved to tenant_inquiries.internal_notes</div>
               </div>
+            </div>
+          </div>
 
-              {/* Legacy fallback */}
-              {!hasThread && (
-                <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
-                  {inquiry.about || "No message provided."}
-                </p>
-              )}
+          {/* Messages + Reply */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="text-sm tracking-[0.2em] opacity-60">MESSAGES</div>
+              <div className="text-xs opacity-60">{messages.length} msg</div>
+            </div>
 
-              {/* Conversation thread */}
-              {hasThread && (
-                <div className="mt-3 space-y-3">
-                  {messages.map((m) => {
-                    const outbound = (m.direction || "").toLowerCase() === "outbound";
-                    return (
-                      <div
-                        key={m.id}
-                        className={`rounded-xl border p-3 ${
-                          outbound
-                            ? "border-amber-500/20 bg-amber-500/5"
-                            : "border-slate-800 bg-slate-950/40"
-                        }`}
-                      >
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-[11px] rounded-full border border-slate-700 px-2 py-0.5 text-slate-300">
-                              {badgeFor(m)}
-                            </span>
-                            {m.subject ? (
-                              <span className="text-xs font-medium text-slate-200">
-                                {m.subject}
-                              </span>
-                            ) : null}
-                          </div>
-                          <span className="text-[11px] text-slate-500">
-                            {formatDateTime(m.created_at)}
-                          </span>
-                        </div>
-
-                        <p className="mt-2 whitespace-pre-wrap text-sm text-slate-200">
-                          {m.body_text || "—"}
-                        </p>
+            <div className="max-h-[320px] space-y-3 overflow-auto rounded-xl border border-white/10 bg-black/30 p-3">
+              {messages.length === 0 ? (
+                <div className="p-3 text-sm opacity-70">No messages logged yet.</div>
+              ) : (
+                messages.map((m) => (
+                  <div key={m.id} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="mb-2 flex items-center justify-between text-xs opacity-70">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full border border-white/10 bg-black/40 px-2 py-1">
+                          {m.channel} • {m.direction}
+                        </span>
+                        {m.subject ? <span className="opacity-80">{m.subject}</span> : null}
                       </div>
-                    );
-                  })}
-                </div>
+                      <span>{new Date(m.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed">{m.body_text}</div>
+                  </div>
+                ))
               )}
+            </div>
+
+            <div className="mt-5 border-t border-white/10 pt-5">
+              <div className="mb-2 text-sm tracking-[0.2em] opacity-60">REPLY</div>
+
+              <input
+                value={replySubject}
+                onChange={(e) => setReplySubject(e.target.value)}
+                placeholder="Subject…"
+                className="mb-3 w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none focus:border-yellow-400/40"
+              />
+
+              <textarea
+                value={replyBody}
+                onChange={(e) => setReplyBody(e.target.value)}
+                placeholder="Write a reply…"
+                className="h-32 w-full resize-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm outline-none focus:border-yellow-400/40"
+              />
+
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={sendReply}
+                  disabled={sending}
+                  className="rounded-full bg-yellow-400 px-5 py-2 text-sm font-semibold text-black hover:brightness-110 disabled:opacity-60"
+                >
+                  {sending ? "Sending…" : "Send Reply"}
+                </button>
+                <div className="text-xs opacity-60">Sends email + logs to inquiry_messages</div>
+              </div>
             </div>
           </div>
         </div>
-      )}
-    </AdminShell>
+      </div>
+    </div>
   );
 }
