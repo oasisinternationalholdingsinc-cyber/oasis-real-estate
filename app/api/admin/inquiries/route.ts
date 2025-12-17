@@ -3,13 +3,30 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/**
+ * IMPORTANT:
+ * - Do NOT instantiate Resend at module import time.
+ * - Next build evaluates route modules during "collecting page data".
+ * - If RESEND_API_KEY isn't set at build time, build must still succeed.
+ */
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  { auth: { persistSession: false } }
-);
+function getResend() {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return null;
+  return new Resend(key);
+}
+
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL");
+  if (!serviceKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+
+  return createClient(url, serviceKey, { auth: { persistSession: false } });
+}
+
+const supabase = getSupabase();
 
 function isAdmin(req: Request) {
   const cookie = req.headers.get("cookie") || "";
@@ -130,7 +147,7 @@ export async function PATCH(req: Request) {
     return noStoreJson({ ok: true });
   }
 
-  // Archive / unarchive / delete (same as your working version)
+  // Archive / unarchive / delete
   if (action === "archive" || action === "unarchive" || action === "delete") {
     const ids = (raw as any).ids as string[] | undefined;
     if (!ids?.length) return noStoreJson({ error: "Missing ids" }, { status: 400 });
@@ -164,7 +181,7 @@ export async function PATCH(req: Request) {
     return noStoreJson({ ok: true });
   }
 
-  // ✅ Internal notes
+  // Internal notes
   if (action === "set_notes") {
     const id = (raw as any).id as string | undefined;
     const notes = (raw as any).notes as string | undefined;
@@ -179,11 +196,17 @@ export async function PATCH(req: Request) {
     return noStoreJson({ ok: true });
   }
 
-  // ✅ Reply from dashboard → send + log
+  // Reply from dashboard → send + log
   if (action === "reply") {
+    const resend = getResend();
+    if (!resend) {
+      return noStoreJson({ error: "Missing RESEND_API_KEY" }, { status: 500 });
+    }
+
     const id = (raw as any).id as string | undefined;
     const subject = ((raw as any).subject as string | undefined) ?? "";
     const body = ((raw as any).body as string | undefined) ?? "";
+
     if (!id) return noStoreJson({ error: "Missing id" }, { status: 400 });
     if (!body.trim()) return noStoreJson({ error: "Message is empty" }, { status: 400 });
 
@@ -201,7 +224,7 @@ export async function PATCH(req: Request) {
     const fromEmail = "Oasis International Real Estate <notifications@oasisintlrealestate.com>";
     const cleanSubject =
       subject.trim() ||
-      `Re: ${String(inquiry.property_slug ?? "Inquiry")} — Oasis International Real Estate`;
+      `Re: ${String((inquiry as any).property_slug ?? "Inquiry")} — Oasis International Real Estate`;
 
     let providerMessageId: string | null = null;
 
@@ -214,7 +237,6 @@ export async function PATCH(req: Request) {
         html: body.replace(/\n/g, "<br/>"),
       });
 
-      // Resend returns an id (best-effort)
       providerMessageId = (sent as any)?.data?.id ?? (sent as any)?.id ?? null;
 
       await logMessage({
@@ -231,13 +253,16 @@ export async function PATCH(req: Request) {
         delivery_status: "sent",
         meta: { source: "dashboard" },
       });
-    } catch (e) {
-      // If send fails, still optionally log attempt (your call).
-      return noStoreJson({ error: "Failed to send email" }, { status: 500 });
+    } catch (e: any) {
+      // Do not leak internals, but give enough to debug.
+      return noStoreJson(
+        { error: "Failed to send email", detail: e?.message ? String(e.message) : undefined },
+        { status: 500 }
+      );
     }
 
     // Optional: bump status to contacted if still new
-    if (String(inquiry.status || "").toLowerCase() === "new") {
+    if (String((inquiry as any).status || "").toLowerCase() === "new") {
       await supabase.from("tenant_inquiries").update({ status: "contacted" }).eq("id", id);
     }
 
