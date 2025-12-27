@@ -10,7 +10,7 @@ const BASE_URL = "https://www.oasisintlrealestate.com";
 const FEATURED = {
   title: "831 Partington Ave – Windsor, ON",
   href: "/properties/partington",
-  rentText: "$2,400/month + utilities",
+  rentText: "$2,200/month + utilities",
   furnishedText: "Fully furnished option available",
   subtitle:
     "Modern 3-bedroom main unit with finished basement, fenced yard, and renovated interior. Minutes from the University of Windsor.",

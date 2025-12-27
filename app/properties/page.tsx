@@ -8,7 +8,7 @@ const LISTINGS = [
     id: "partington",
     title: "831 Partington Ave – Windsor, ON",
     href: "/properties/partington",
-    rentText: "$2,400/month + utilities",
+    rentText: "$2,200/month + utilities",
     subtitle:
       "Modern 3-bedroom main unit with finished basement, fenced yard, and renovated interior. Minutes from the University of Windsor.",
     imageSrc: "/images/partington/front-exterior-renovated.jpg",
@@ -205,17 +205,22 @@ export default function PropertiesPage() {
         </section>
 
         {/* Footer */}
-        <footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
-          <p>
-            © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
-            Executive Rentals · Windsor, Ontario.
-          </p>
-          <p className="mt-1">
-            Oasis maintains a curated portfolio. Availability changes; inquire
-            for the most current information.
-          </p>
-        </footer>
-      </div>
-    </div>
-  );
-}
+<footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
+  <p>
+    © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
+    Executive Rentals · Windsor, Ontario.
+  </p>
+
+  <p className="mt-1">
+    Call or text:{" "}
+    <span className="font-semibold text-slate-700">
+      519-288-8882
+    </span>
+  </p>
+
+  <p className="mt-1">
+    Oasis maintains a curated portfolio. Availability changes; inquire
+    for the most current information.
+  </p>
+</footer>
+

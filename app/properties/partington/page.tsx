@@ -13,7 +13,7 @@ const LISTING = {
   headline: "Modern 3-bedroom main unit with finished basement & fenced yard",
   subheadline:
     "Executive-style living for families, professionals, and mature students near the University of Windsor.",
-  rentText: "$2,400/month + utilities",
+  rentText: "$2,200/month + utilities",
   furnishedText: "Fully furnished option available (as shown in photos)",
   leaseText: "12-month preferred · long-term tenancy",
   unitText: "Main unit only · non-shared home",
