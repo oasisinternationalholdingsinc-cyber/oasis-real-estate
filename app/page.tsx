@@ -1,4 +1,3 @@
-// app/properties/page.tsx
 "use client";
 
 import Image from "next/image";
@@ -19,9 +18,9 @@ const LISTINGS = [
   },
 ];
 
-const PHONE_DISPLAY = "519 288 8882";
-const PHONE_TEL = "+15192888882";
-const SITE = "oasisintlrealestate.com";
+const PHONE_DISPLAY = "519-288-8882";
+const PHONE_TEL = "tel:+15192888882";
+const WEBSITE = "https://www.oasisintlrealestate.com";
 
 export default function PropertiesPage() {
   const availableCount = LISTINGS.length;
@@ -161,7 +160,7 @@ export default function PropertiesPage() {
           </div>
         </section>
 
-        {/* Oasis Standard (small trust panel) */}
+        {/* Oasis Standard */}
         <section className="mt-10">
           <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-300">
@@ -198,16 +197,10 @@ export default function PropertiesPage() {
                 Email Waitlist Request
               </a>
               <a
-                href={`tel:${PHONE_TEL}`}
-                className="inline-flex items-center justify-center rounded-full border border-amber-400/70 bg-black/60 px-5 py-2 font-semibold text-amber-200 hover:bg-amber-500/10"
-              >
-                Call / Text {PHONE_DISPLAY}
-              </a>
-              <a
                 href="/forms/Oasis_Tenant_Application_831_Partington_2Page_FINAL.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-black/60 px-5 py-2 font-semibold text-slate-200 hover:border-amber-300 hover:text-amber-200"
+                className="inline-flex items-center justify-center rounded-full border border-amber-400/70 bg-black/60 px-5 py-2 font-semibold text-amber-200 hover:bg-amber-500/10"
               >
                 Download Application (PDF)
               </a>
@@ -221,30 +214,22 @@ export default function PropertiesPage() {
             © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
             Executive Rentals · Windsor, Ontario.
           </p>
+
           <p className="mt-1">
-            <a
-              className="text-amber-200 hover:text-amber-300"
-              href={`tel:${PHONE_TEL}`}
-            >
+            <a href={PHONE_TEL} className="text-amber-300 hover:underline">
               {PHONE_DISPLAY}
             </a>{" "}
             ·{" "}
             <a
-              className="text-amber-200 hover:text-amber-300"
-              href={`https://${SITE}`}
+              href={WEBSITE}
               target="_blank"
               rel="noopener noreferrer"
+              className="text-amber-300 hover:underline"
             >
-              {SITE}
-            </a>{" "}
-            ·{" "}
-            <a
-              className="text-amber-200 hover:text-amber-300"
-              href="mailto:oasisintlrealestate@gmail.com?subject=Oasis%20Rental%20Inquiry"
-            >
-              oasisintlrealestate@gmail.com
+              oasisintlrealestate.com
             </a>
           </p>
+
           <p className="mt-1">
             Oasis maintains a curated portfolio. Availability changes; inquire
             for the most current information.
