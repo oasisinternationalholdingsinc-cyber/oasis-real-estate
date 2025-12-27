@@ -18,6 +18,10 @@ const LISTINGS = [
   },
 ];
 
+const PHONE_DISPLAY = "519-288-8882";
+const PHONE_TEL = "tel:+15192888882";
+const WEBSITE = "https://www.oasisintlrealestate.com";
+
 export default function PropertiesPage() {
   const availableCount = LISTINGS.length;
 
@@ -156,7 +160,7 @@ export default function PropertiesPage() {
           </div>
         </section>
 
-        {/* Oasis Standard (small trust panel) */}
+        {/* Oasis Standard */}
         <section className="mt-10">
           <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-300">
@@ -205,22 +209,33 @@ export default function PropertiesPage() {
         </section>
 
         {/* Footer */}
-<footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
-  <p>
-    © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
-    Executive Rentals · Windsor, Ontario.
-  </p>
+        <footer className="mt-10 border-t border-slate-900 pt-4 text-[10px] text-slate-500">
+          <p>
+            © {new Date().getFullYear()} Oasis International Real Estate Inc. ·
+            Executive Rentals · Windsor, Ontario.
+          </p>
 
-  <p className="mt-1">
-    Call or text:{" "}
-    <span className="font-semibold text-slate-700">
-      519-288-8882
-    </span>
-  </p>
+          <p className="mt-1">
+            <a href={PHONE_TEL} className="text-amber-300 hover:underline">
+              {PHONE_DISPLAY}
+            </a>{" "}
+            ·{" "}
+            <a
+              href={WEBSITE}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-300 hover:underline"
+            >
+              oasisintlrealestate.com
+            </a>
+          </p>
 
-  <p className="mt-1">
-    Oasis maintains a curated portfolio. Availability changes; inquire
-    for the most current information.
-  </p>
-</footer>
-
+          <p className="mt-1">
+            Oasis maintains a curated portfolio. Availability changes; inquire
+            for the most current information.
+          </p>
+        </footer>
+      </div>
+    </div>
+  );
+}
