@@ -5,16 +5,31 @@ import Link from "next/link";
 
 const LISTINGS = [
   {
+    id: "partington-1bed",
+    title: "831 Partington Ave – Windsor, ON",
+    href: "/properties/831-partington-1bed",
+    rentText: "$1,100/month + utilities",
+    subtitle:
+      "Bright 1-bedroom addition with full bathroom, living room, and kitchen — designed to feel open, spacious, and well-lit.",
+    imageSrc:
+      "/images/831-partington-1bed/831-partington-1bed-02-living-room.png",
+    imageAlt:
+      "Living room view of the 1-bedroom addition at 831 Partington Ave with kitchen sightline and bright lighting.",
+    tags: ["1 Bedroom Addition", "Private Entrance", "Now Available"],
+    status: "AVAILABLE" as const,
+  },
+  {
     id: "partington",
     title: "831 Partington Ave – Windsor, ON",
     href: "/properties/partington",
-    rentText: "$2,200/month + utilities",
+    rentText: "MAIN UNIT RENTED",
     subtitle:
       "Modern 3-bedroom main unit with finished basement, fenced yard, and renovated interior. Minutes from the University of Windsor.",
     imageSrc: "/images/partington/front-exterior-renovated.jpg",
     imageAlt:
       "Front exterior of 831 Partington Ave with landscaped planter and wood exterior.",
-    tags: ["Main Unit", "Fenced Yard"],
+    tags: ["Main Unit", "Fenced Yard", "Rented"],
+    status: "RENTED" as const,
   },
 ];
 
@@ -23,7 +38,7 @@ const PHONE_TEL = "tel:+15192888882";
 const WEBSITE = "https://www.oasisintlrealestate.com";
 
 export default function PropertiesPage() {
-  const availableCount = LISTINGS.length;
+  const availableCount = LISTINGS.filter((l) => l.status === "AVAILABLE").length;
 
   return (
     <div className="min-h-screen w-full bg-black text-slate-100 overflow-x-hidden">
@@ -112,51 +127,80 @@ export default function PropertiesPage() {
         {/* Listings grid */}
         <section className="mt-10">
           <div className="grid gap-5 md:grid-cols-2">
-            {LISTINGS.map((p) => (
-              <Link
-                key={p.id}
-                href={p.href}
-                className="group block overflow-hidden rounded-3xl border border-slate-800 bg-slate-950/70 transition hover:border-amber-400/70 hover:shadow-[0_22px_55px_rgba(15,23,42,0.85)]"
-              >
-                <div className="relative h-56 w-full sm:h-64">
-                  <Image
-                    src={p.imageSrc}
-                    alt={p.imageAlt}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                    sizes="(min-width: 1024px) 520px, 100vw"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+            {LISTINGS.map((p) => {
+              const isRented = p.status === "RENTED";
 
-                  <div className="absolute right-4 top-4 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-semibold text-black shadow-lg shadow-amber-500/40">
-                    {p.rentText}
+              return (
+                <Link
+                  key={p.id}
+                  href={p.href}
+                  aria-disabled={false}
+                  className={[
+                    "group block overflow-hidden rounded-3xl border bg-slate-950/70 transition",
+                    "hover:shadow-[0_22px_55px_rgba(15,23,42,0.85)]",
+                    isRented
+                      ? "border-slate-800 opacity-90 hover:border-slate-700"
+                      : "border-slate-800 hover:border-amber-400/70",
+                  ].join(" ")}
+                >
+                  <div className="relative h-56 w-full sm:h-64">
+                    <Image
+                      src={p.imageSrc}
+                      alt={p.imageAlt}
+                      fill
+                      className={[
+                        "object-cover transition-transform duration-500",
+                        isRented ? "group-hover:scale-[1.01]" : "group-hover:scale-[1.03]",
+                      ].join(" ")}
+                      sizes="(min-width: 1024px) 520px, 100vw"
+                    />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+
+                    {/* Top-right badge */}
+                    <div
+                      className={[
+                        "absolute right-4 top-4 rounded-full px-3 py-1 text-[10px] font-semibold shadow-lg",
+                        isRented
+                          ? "bg-slate-200 text-black shadow-slate-500/20"
+                          : "bg-amber-400 text-black shadow-amber-500/40",
+                      ].join(" ")}
+                    >
+                      {p.rentText}
+                    </div>
+
+                    {/* Optional rented ribbon */}
+                    {isRented && (
+                      <div className="absolute left-4 top-4 rounded-full border border-slate-600 bg-black/55 px-3 py-1 text-[10px] font-semibold text-slate-200">
+                        Rented
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                <div className="p-4">
-                  <p className="text-sm font-semibold text-amber-200">
-                    {p.title}
-                  </p>
-                  <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
-                    {p.subtitle}
-                  </p>
+                  <div className="p-4">
+                    <p className="text-sm font-semibold text-amber-200">
+                      {p.title}
+                    </p>
+                    <p className="mt-1 text-[11px] leading-relaxed text-slate-300">
+                      {p.subtitle}
+                    </p>
 
-                  <div className="mt-3 flex flex-wrap gap-2 text-[10px]">
-                    {p.tags.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded-full border border-slate-700 bg-black/40 px-2.5 py-1 text-slate-200"
-                      >
-                        {t}
+                    <div className="mt-3 flex flex-wrap gap-2 text-[10px]">
+                      {p.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="rounded-full border border-slate-700 bg-black/40 px-2.5 py-1 text-slate-200"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                      <span className="ml-auto text-[10px] font-semibold text-amber-200">
+                        {isRented ? "View (Rented) →" : "View listing →"}
                       </span>
-                    ))}
-                    <span className="ml-auto text-[10px] font-semibold text-amber-200">
-                      View listing →
-                    </span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
 
