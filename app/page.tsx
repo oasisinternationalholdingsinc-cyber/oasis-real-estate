@@ -10,17 +10,24 @@ const PHONE_TEL = "tel:+15192888882";
 const WEBSITE_DISPLAY = "oasisintlrealestate.com";
 const WEBSITE = "https://www.oasisintlrealestate.com";
 
-// Single source of truth for featured listing
+// ✅ Featured listing should be the AVAILABLE unit (1-bed addition)
 const FEATURED = {
   title: "831 Partington Ave – Windsor, ON",
-  href: "/properties/partington",
-  rentText: "$2,200/month + utilities",
-  furnishedText: "Fully furnished option available",
+  href: "/properties/831-partington-1bed",
+  rentText: "$1,100/month + utilities",
+  furnishedText: "Not furnished",
   subtitle:
-    "Modern 3-bedroom main unit with finished basement, fenced yard, and renovated interior. Minutes from the University of Windsor.",
-  imageSrc: "/images/partington/front-exterior-renovated.jpg",
+    "Bright 1-bedroom addition with full bathroom, kitchen, and living room — designed to feel open, spacious, and well-lit. Private entrance.",
+  imageSrc: "/images/831-partington-1bed/831-partington-1bed-living-room.png",
   imageAlt:
-    "Front view of 831 Partington Ave with landscaped planter and wood exterior.",
+    "Bright living room with kitchen view in the 1-bedroom addition at 831 Partington Ave.",
+};
+
+// ✅ Keep main unit listed for reuse, but clearly marked not available
+const MAIN_UNIT = {
+  title: "831 Partington Ave – Windsor, ON",
+  href: "/properties/partington",
+  statusText: "Main Unit Rented",
 };
 
 export default function OasisHomePage() {
@@ -75,9 +82,20 @@ export default function OasisHomePage() {
               <Link href="/properties" className="hover:text-amber-300">
                 Properties
               </Link>
+
+              {/* Featured is the available unit */}
               <Link href={FEATURED.href} className="hover:text-amber-300">
-                831 Partington
+                831 Partington — 1 Bed
               </Link>
+
+              {/* Keep main unit accessible but clearly marked */}
+              <Link href={MAIN_UNIT.href} className="hover:text-amber-300">
+                831 Partington{" "}
+                <span className="ml-2 rounded-full border border-slate-700 bg-black/50 px-2 py-[2px] text-[10px] font-semibold text-slate-200">
+                  {MAIN_UNIT.statusText}
+                </span>
+              </Link>
+
               <a href="#contact" className="hover:text-amber-300">
                 Contact
               </a>
@@ -130,16 +148,29 @@ export default function OasisHomePage() {
                 </div>
                 <div>
                   <dt className="text-slate-500">How we operate</dt>
-                  <dd className="font-medium">Owner-operated · clear standards · quick response</dd>
+                  <dd className="font-medium">
+                    Owner-operated · clear standards · quick response
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-slate-500">Where we are</dt>
                   <dd className="font-medium">Windsor, Ontario · near UofW</dd>
                 </div>
               </dl>
+
+              {/* Calm, enterprise note */}
+              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-[11px] text-slate-300">
+                <p className="font-semibold text-amber-200">Availability update</p>
+                <p className="mt-1">
+                  The <span className="text-slate-100">3-bedroom main unit</span> at 831 Partington is{" "}
+                  <span className="font-semibold text-slate-100">rented</span>. The{" "}
+                  <span className="text-slate-100">1-bedroom addition</span> is currently{" "}
+                  <span className="font-semibold text-amber-200">available</span>.
+                </p>
+              </div>
             </div>
 
-            {/* Featured Card */}
+            {/* Featured Card (AVAILABLE 1-bed) */}
             <Link
               href={FEATURED.href}
               className="group relative overflow-hidden rounded-3xl border border-slate-800 bg-black shadow-[0_0_40px_rgba(251,191,36,0.25)] hover:border-amber-400/60"
@@ -157,6 +188,10 @@ export default function OasisHomePage() {
 
               <div className="absolute right-4 top-4 rounded-full bg-amber-400 px-3 py-1 text-[10px] font-semibold text-black shadow-md shadow-amber-500/25">
                 {FEATURED.rentText}
+              </div>
+
+              <div className="absolute left-4 top-4 rounded-full border border-amber-400/60 bg-black/55 px-3 py-1 text-[10px] font-semibold text-amber-200">
+                Now Available
               </div>
 
               <div className="p-4">
@@ -240,6 +275,11 @@ export default function OasisHomePage() {
                     Download Application (PDF)
                   </a>
                 </div>
+
+                <p className="mt-3 text-[11px] text-slate-500">
+                  Note: The 3-bedroom main unit at 831 Partington is currently rented. Please
+                  inquire for the 1-bedroom addition or future availability.
+                </p>
               </div>
             </div>
           </section>
