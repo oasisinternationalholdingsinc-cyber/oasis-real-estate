@@ -18,9 +18,11 @@ const FEATURED = {
   furnishedText: "Not furnished",
   subtitle:
     "Bright 1-bedroom addition with full bathroom, kitchen, and living room — designed to feel open, spacious, and well-lit. Private entrance.",
-  imageSrc: "/images/831-partington-1bed/831-partington-1bed-living-room.png",
+  // ✅ FIXED: use the canonical hero filename so we never break again
+  // Put this file at: public/images/831-partington-1bed/hero.png
+  imageSrc: "/images/831-partington-1bed/hero.png",
   imageAlt:
-    "Bright living room with kitchen view in the 1-bedroom addition at 831 Partington Ave.",
+    "Private entrance to the 1-bedroom addition at 831 Partington Ave in Windsor, Ontario.",
 };
 
 // ✅ Keep main unit listed for reuse, but clearly marked not available
@@ -121,8 +123,8 @@ export default function OasisHomePage() {
               </h1>
 
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-slate-300 sm:text-base">
-                We renovate, inspect, and maintain our homes with pride — built for
-                long-term tenants who value respect, cleanliness, and clear communication.
+                We renovate, inspect, and maintain our homes with pride — built for long-term
+                tenants who value respect, cleanliness, and clear communication.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
@@ -148,9 +150,7 @@ export default function OasisHomePage() {
                 </div>
                 <div>
                   <dt className="text-slate-500">How we operate</dt>
-                  <dd className="font-medium">
-                    Owner-operated · clear standards · quick response
-                  </dd>
+                  <dd className="font-medium">Owner-operated · clear standards · quick response</dd>
                 </div>
                 <div>
                   <dt className="text-slate-500">Where we are</dt>
@@ -162,8 +162,8 @@ export default function OasisHomePage() {
               <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-[11px] text-slate-300">
                 <p className="font-semibold text-amber-200">Availability update</p>
                 <p className="mt-1">
-                  The <span className="text-slate-100">3-bedroom main unit</span> at 831 Partington is{" "}
-                  <span className="font-semibold text-slate-100">rented</span>. The{" "}
+                  The <span className="text-slate-100">3-bedroom main unit</span> at 831 Partington
+                  is <span className="font-semibold text-slate-100">rented</span>. The{" "}
                   <span className="text-slate-100">1-bedroom addition</span> is currently{" "}
                   <span className="font-semibold text-amber-200">available</span>.
                 </p>

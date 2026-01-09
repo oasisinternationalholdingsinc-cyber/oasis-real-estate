@@ -23,9 +23,20 @@ const LISTING = {
 
 type GalleryImage = { src: string; alt: string; label: string };
 
+/**
+ * ✅ OPTION B FIX (matching your actual filenames in /public/images/831-partington-1bed/)
+ * You deleted hero.png and your folder contains:
+ * - 831-partington-1bed-entrance.png
+ * - 831-partington-1bed-02-living-room.png
+ * - 831-partington-1bed-03-kitchen-wide.png
+ * - 831-partington-1bed-04-kitchen-details.png
+ * - 831-partington-1bed-05-bedroom.png
+ * - 831-partington-1bed-06-bathroom.png
+ * - 831-partington-1bed-07-backyard.png
+ */
 const galleryImages: GalleryImage[] = [
   {
-    src: "/images/831-partington-1bed/831-partington-1bed-01-entrance.png",
+    src: "/images/831-partington-1bed/831-partington-1bed-entrance.png",
     alt: "Private entrance to the 1-bedroom addition at 831 Partington Ave.",
     label: "Private Entrance",
   },
@@ -216,10 +227,14 @@ export default function Partington1BedPage() {
       if (!res.ok) {
         console.error("Inquiry error:", data);
         setSubmitStatus("error");
-        setSubmitMessage("Something went wrong submitting your inquiry. Please try again or email us directly.");
+        setSubmitMessage(
+          "Something went wrong submitting your inquiry. Please try again or email us directly."
+        );
       } else {
         setSubmitStatus("success");
-        setSubmitMessage("Thank you — your inquiry has been received. We’ll follow up with next steps and viewing times.");
+        setSubmitMessage(
+          "Thank you — your inquiry has been received. We’ll follow up with next steps and viewing times."
+        );
         form.reset();
       }
     } catch (err) {
@@ -257,8 +272,12 @@ export default function Partington1BedPage() {
           </div>
 
           <nav className="hidden items-center gap-6 text-xs font-medium text-slate-300 sm:flex">
-            <Link href="/" className="hover:text-amber-300">Oasis Home</Link>
-            <Link href="/properties" className="hover:text-amber-300">All Properties</Link>
+            <Link href="/" className="hover:text-amber-300">
+              Oasis Home
+            </Link>
+            <Link href="/properties" className="hover:text-amber-300">
+              All Properties
+            </Link>
             <span className="rounded-full bg-amber-400/10 px-3 py-1 text-amber-200">
               831 Partington — 1 Bed
             </span>
@@ -318,11 +337,7 @@ export default function Partington1BedPage() {
           </div>
 
           {/* Right proof card */}
-          <div
-            className="space-y-4 [perspective:1200px]"
-            onMouseMove={handleHeroMouseMove}
-            onMouseLeave={resetHeroTilt}
-          >
+          <div className="space-y-4 [perspective:1200px]" onMouseMove={handleHeroMouseMove} onMouseLeave={resetHeroTilt}>
             <div
               style={heroTiltStyle}
               className="overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-950 to-black shadow-[0_0_35px_rgba(251,191,36,0.22)] transition-transform"
@@ -342,7 +357,9 @@ export default function Partington1BedPage() {
               </div>
 
               <div className="flex items-center justify-between px-4 pb-4 pt-3 text-[11px] text-slate-300">
-                <span>{LISTING.unitLabel} · 1 of {galleryImages.length} photos</span>
+                <span>
+                  {LISTING.unitLabel} · 1 of {galleryImages.length} photos
+                </span>
                 <button
                   type="button"
                   onClick={() => openLightboxAt(0)}
@@ -360,9 +377,7 @@ export default function Partington1BedPage() {
           <div className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-300">
-                  Offer Snapshot
-                </p>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-amber-300">Offer Snapshot</p>
                 <p className="mt-2 text-sm text-slate-300">
                   {LISTING.unitText} · {LISTING.leaseText}
                 </p>
@@ -372,9 +387,7 @@ export default function Partington1BedPage() {
                 <span className="rounded-full bg-amber-400 px-4 py-1.5 text-sm font-semibold text-black shadow-md shadow-amber-500/25">
                   Rent: {LISTING.rentText}
                 </span>
-                <p className="mt-2 text-[11px] text-slate-400">
-                  {LISTING.utilitiesText}
-                </p>
+                <p className="mt-2 text-[11px] text-slate-400">{LISTING.utilitiesText}</p>
               </div>
             </div>
 
@@ -401,16 +414,10 @@ export default function Partington1BedPage() {
         </div>
 
         {/* GALLERY */}
-        <section
-          id="gallery"
-          ref={galleryFade.ref}
-          className={`mt-10 ${fadeCls(galleryFade.visible)}`}
-        >
+        <section id="gallery" ref={galleryFade.ref} className={`mt-10 ${fadeCls(galleryFade.visible)}`}>
           <div className="flex items-baseline justify-between gap-4">
             <div>
-              <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-                Photo Gallery
-              </h2>
+              <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">Photo Gallery</h2>
               <p className="mt-1 text-sm text-slate-300">All photos are of the actual unit.</p>
             </div>
 
@@ -448,9 +455,7 @@ export default function Partington1BedPage() {
 
         {/* SPECS */}
         <section ref={specsFade.ref} className={`mt-12 ${fadeCls(specsFade.visible)}`}>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">
-            Highlights &amp; Quick Facts
-          </h2>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.22em] text-amber-300">Highlights &amp; Quick Facts</h2>
           <p className="mt-1 text-sm text-slate-300">Practical details for serious tenants.</p>
 
           <div className="mt-5 grid gap-5 text-xs sm:text-sm md:grid-cols-2">
@@ -491,7 +496,9 @@ export default function Partington1BedPage() {
           >
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300" htmlFor="fullName">Full name</label>
+                <label className="text-[11px] text-slate-300" htmlFor="fullName">
+                  Full name
+                </label>
                 <input
                   id="fullName"
                   name="fullName"
@@ -502,7 +509,9 @@ export default function Partington1BedPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300" htmlFor="email">Email</label>
+                <label className="text-[11px] text-slate-300" htmlFor="email">
+                  Email
+                </label>
                 <input
                   id="email"
                   name="email"
@@ -515,7 +524,9 @@ export default function Partington1BedPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300" htmlFor="phone">Phone (optional)</label>
+                <label className="text-[11px] text-slate-300" htmlFor="phone">
+                  Phone (optional)
+                </label>
                 <input
                   id="phone"
                   name="phone"
@@ -525,7 +536,9 @@ export default function Partington1BedPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] text-slate-300" htmlFor="moveInDate">Preferred move-in date</label>
+                <label className="text-[11px] text-slate-300" htmlFor="moveInDate">
+                  Preferred move-in date
+                </label>
                 <input
                   id="moveInDate"
                   name="moveInDate"
@@ -536,7 +549,9 @@ export default function Partington1BedPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-slate-300" htmlFor="occupant">Who will be living here?</label>
+              <label className="text-[11px] text-slate-300" htmlFor="occupant">
+                Who will be living here?
+              </label>
               <select
                 id="occupant"
                 name="occupant"
@@ -565,9 +580,7 @@ export default function Partington1BedPage() {
 
             <label className="flex items-start gap-2 text-[11px] text-slate-300">
               <input type="checkbox" name="consent" className="mt-1 h-4 w-4 rounded border-slate-700 bg-black" />
-              <span>
-                I agree to be contacted about availability, viewing times, and next steps.
-              </span>
+              <span>I agree to be contacted about availability, viewing times, and next steps.</span>
             </label>
 
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -579,9 +592,7 @@ export default function Partington1BedPage() {
                 {submitting ? "Submitting..." : "Submit Inquiry"}
               </button>
 
-              {submitStatus === "error" && submitMessage && (
-                <p className="text-[11px] text-rose-300">{submitMessage}</p>
-              )}
+              {submitStatus === "error" && submitMessage && <p className="text-[11px] text-rose-300">{submitMessage}</p>}
             </div>
 
             {submitStatus === "success" && (
