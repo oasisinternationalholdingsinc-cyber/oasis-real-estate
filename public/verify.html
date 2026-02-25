@@ -315,17 +315,23 @@
             <div>
               <h2>Resolve</h2>
               <div class="hint">
-                Enter the document <b>SHA-256 hash</b> (64 hex characters). This portal resolves the record and opens a
-                time-limited signed URL from a private registry.
+                Enter the document <b>SHA-256 hash</b> (64 hex characters) <span class="muted">or</span> a <b>Record ID</b> (UUID).
+                This portal resolves the record and opens a time-limited signed URL from a private registry.
               </div>
             </div>
           </div>
         </div>
 
         <div class="bd">
-          <div>
-            <label>Hash (SHA-256)</label>
-            <input id="hash" placeholder="64 hex characters" autocomplete="off" spellcheck="false" />
+          <div style="display:grid;grid-template-columns:1fr;gap:12px">
+            <div>
+              <label>Hash (SHA-256)</label>
+              <input id="hash" placeholder="64 hex characters" autocomplete="off" spellcheck="false" />
+            </div>
+            <div>
+              <label>Record ID (UUID)</label>
+              <input id="rid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" spellcheck="false" />
+            </div>
           </div>
 
           <div class="btns">
@@ -339,7 +345,7 @@
           <details>
             <summary>What is this?</summary>
             <div class="muted" style="margin-top:8px">
-              This verification portal checks a hash against the official document registry and returns a short-lived signed link to view the file.
+              This verification portal checks a hash (or record id) against the official document registry and returns a short-lived signed link to view the file.
               Storage remains private.
             </div>
           </details>
@@ -353,7 +359,7 @@
             <div>
               <h2>Attestation</h2>
               <div class="hint">
-                If the hash is registered, this page displays the record metadata and opens the verified document.
+                If the identifier is registered, this page displays the record metadata and opens the verified document.
               </div>
             </div>
           </div>
@@ -453,6 +459,7 @@
   };
 
   function isHex64(v){ return typeof v === "string" && /^[a-f0-9]{64}$/i.test(v.trim()); }
+  function isUuid(v){ return typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v.trim()); }
 
   function resetRightPane() {
     setBadge("STATUS: —", "warn");
@@ -482,7 +489,48 @@
     try { return { json: JSON.parse(raw), raw }; } catch { return { json: null, raw }; }
   }
 
-  async function callVerify(hash) {
+  function buildPayload() {
+    const h = ($("hash").value || "").trim().toLowerCase();
+    const rid = ($("rid").value || "").trim();
+
+    // Priority: explicit id if present (QR should send ?id=...)
+    if (rid && isUuid(rid)) return { id: rid };
+    if (h && isHex64(h)) return { hash: h };
+    return null;
+  }
+
+  function syncInputsFromUrl() {
+    const urlHash = (qs.get("hash") || "").trim().toLowerCase();
+    const urlId = (qs.get("id") || qs.get("file_id") || qs.get("rid") || "").trim();
+
+    if (urlId && isUuid(urlId)) {
+      $("rid").value = urlId;
+      $("hash").value = "";
+      return { id: urlId };
+    }
+    if (urlHash && isHex64(urlHash)) {
+      $("hash").value = urlHash;
+      $("rid").value = "";
+      return { hash: urlHash };
+    }
+    return null;
+  }
+
+  function setUrlFromPayload(payload) {
+    const u = new URL(location.href);
+    // clean
+    u.searchParams.delete("hash");
+    u.searchParams.delete("id");
+    u.searchParams.delete("file_id");
+    u.searchParams.delete("rid");
+
+    if (payload?.id) u.searchParams.set("id", payload.id);
+    if (payload?.hash) u.searchParams.set("hash", payload.hash);
+
+    history.replaceState({}, "", u.toString());
+  }
+
+  async function callVerify(payload) {
     resetRightPane();
     setStatus("Resolving…", null);
 
@@ -494,17 +542,17 @@
         headers: {
           "Content-Type": "application/json",
           "apikey": SB_ANON,
+          // Public terminal: we use anon for access to Edge function (matches your current pattern)
           "Authorization": `Bearer ${SB_ANON}`
         },
-        body: JSON.stringify({ hash })
+        body: JSON.stringify(payload)
       });
 
       const { json, raw } = await readJson(res);
 
-      // If resolver didn't return JSON, treat as temporary error.
       if (!json) {
         setBadge("STATUS: TEMPORARY ERROR", "bad");
-        setStatus("Temporary error resolving this hash. Please try again shortly.", "bad");
+        setStatus("Temporary error resolving this identifier. Please try again shortly.", "bad");
         return;
       }
 
@@ -512,7 +560,12 @@
         const err = (json.error || "FAILED");
         if (err === "NOT_REGISTERED") {
           setBadge("STATUS: NOT REGISTERED", "warn");
-          setStatus("This hash is not registered in the official document registry.", "warn");
+          setStatus("This identifier is not registered in the official document registry.", "warn");
+          return;
+        }
+        if (err === "MISSING_IDENTIFIER") {
+          setBadge("STATUS: INVALID INPUT", "bad");
+          setStatus("Provide a valid Record ID (UUID) or Hash (SHA-256 hex64).", "bad");
           return;
         }
         setBadge("STATUS: UNAVAILABLE", "bad");
@@ -520,15 +573,9 @@
         return;
       }
 
-      // Success
       const rec = json.record || {};
       activeRecord = rec;
 
-      const status =
-        (rec.status ? String(rec.status).toUpperCase() : null) ||
-        (rec.kind ? String(rec.kind).toUpperCase() : "VERIFIED");
-
-      // We don't rely on record.status existing, so we just show VERIFIED in green.
       setBadge("STATUS: VERIFIED", "ok");
 
       $("idLine").textContent = safeText(rec.id);
@@ -536,11 +583,9 @@
       $("titleLine").textContent = safeText(rec.title, safeText(rec.doc_type, "Document"));
       $("typeLine").textContent  = `doc_type: ${safeText(rec.doc_type)} • kind: ${safeText(rec.kind)} • created: ${safeText(rec.created_at)}`;
 
-      // Property/Unit: your current resolver returns property_id; unit may not exist yet (fine).
       $("propertyLine").textContent = safeText(rec.property_id, "—");
-      $("unitLine").textContent = "—";
+      $("unitLine").textContent = safeText(rec.unit_id, "—");
 
-      // URLs
       activeViewUrl = json.view_url || null;
       activeDownloadUrl = json.download_url || json.signed_url || null;
 
@@ -553,11 +598,10 @@
         setStatus("Verified record, but document link unavailable.", "warn");
       }
 
-      // Optional technical details (hidden by default)
-      // You can delete this block entirely if you never want tech details.
       $("techDetails").style.display = "block";
       $("techLine").textContent =
-        `request_id: ${safeText(json.request_id)} • expires_in: ${safeText(json.expires_in)}s`;
+        `request_id: ${safeText(json.request_id)} • expires_in: ${safeText(json.expires_in)}s` +
+        (json.used_storage_path ? ` • path: ${safeText(json.used_storage_path)}` : "");
     } catch (e) {
       setBadge("STATUS: TEMPORARY ERROR", "bad");
       setStatus("Temporary network error. Please try again.", "bad");
@@ -566,24 +610,25 @@
 
   // Buttons
   $("btnResolve").addEventListener("click", () => {
-    const h = ($("hash").value || "").trim().toLowerCase();
-    if (!isHex64(h)) {
-      setBadge("STATUS: INVALID HASH", "bad");
-      setStatus("Hash must be 64 hex characters (SHA-256).", "bad");
+    const payload = buildPayload();
+    if (!payload) {
+      setBadge("STATUS: INVALID INPUT", "bad");
+      setStatus("Enter a valid Record ID (UUID) or Hash (SHA-256 hex64).", "bad");
       return;
     }
-    // Update URL (nice for sharing)
-    const u = new URL(location.href);
-    u.searchParams.set("hash", h);
-    history.replaceState({}, "", u.toString());
-    callVerify(h);
+    setUrlFromPayload(payload);
+    callVerify(payload);
   });
 
   $("btnCopyLink").addEventListener("click", async () => {
-    const h = ($("hash").value || "").trim().toLowerCase();
+    const payload = buildPayload();
     const u = new URL(location.href);
     u.searchParams.delete("hash");
-    if (isHex64(h)) u.searchParams.set("hash", h);
+    u.searchParams.delete("id");
+    u.searchParams.delete("file_id");
+    u.searchParams.delete("rid");
+    if (payload?.id) u.searchParams.set("id", payload.id);
+    if (payload?.hash) u.searchParams.set("hash", payload.hash);
     try {
       await navigator.clipboard.writeText(u.toString());
       setStatus("Link copied.", "ok");
@@ -594,8 +639,12 @@
 
   $("btnClear").addEventListener("click", () => {
     $("hash").value = "";
+    $("rid").value = "";
     const u = new URL(location.href);
     u.searchParams.delete("hash");
+    u.searchParams.delete("id");
+    u.searchParams.delete("file_id");
+    u.searchParams.delete("rid");
     history.replaceState({}, "", u.toString());
     resetRightPane();
     setStatus("Cleared.", null);
@@ -629,15 +678,24 @@
     a.remove();
   });
 
-  // Auto-resolve from ?hash=
-  const initialHash = (qs.get("hash") || "").trim().toLowerCase();
-  if (isHex64(initialHash)) {
-    $("hash").value = initialHash;
+  // If user types ID, clear hash (prevents ambiguity)
+  $("rid").addEventListener("input", () => {
+    const rid = ($("rid").value || "").trim();
+    if (rid) $("hash").value = "";
+  });
+  $("hash").addEventListener("input", () => {
+    const h = ($("hash").value || "").trim();
+    if (h) $("rid").value = "";
+  });
+
+  // Auto-resolve from URL: prefer id over hash (QR should use id)
+  const initial = syncInputsFromUrl();
+  if (initial) {
     setStatus("Resolving from link…", null);
-    callVerify(initialHash);
+    callVerify(initial);
   } else {
     resetRightPane();
-    setStatus("Ready. Enter a hash and verify.", null);
+    setStatus("Ready. Enter a record id or hash and verify.", null);
   }
 </script>
 </body>
