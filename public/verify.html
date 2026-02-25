@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Oasis International Real Estate — Verify</title>
+  <meta name="color-scheme" content="light" />
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root{
+      --bg0:#ffffff;
+      --bg1:#fff6f2;              /* blush */
+      --card:#ffffff;
+      --ink:#0e1420;
+      --muted: rgba(14,20,32,.62);
+      --stroke: rgba(14,20,32,.10);
+      --stroke2: rgba(14,20,32,.14);
+      --shadow: 0 18px 60px rgba(10, 20, 40, .10);
+      --shadow2: 0 10px 28px rgba(10, 20, 40, .08);
+
+      --gold: rgba(184, 134, 11, .98);      /* calm gold */
+      --gold2: rgba(184, 134, 11, .14);
+      --green: rgba(18, 153, 96, .98);
+      --green2: rgba(18, 153, 96, .12);
+      --red: rgba(201, 55, 55, .98);
+      --red2: rgba(201, 55, 55, .10);
+      --amber: rgba(184, 134, 11, .98);
+
+      --r: 18px;
+      --r2: 22px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 800px at 18% 0%, rgba(184,134,11,.10), transparent 55%),
+        radial-gradient(900px 700px at 82% 0%, rgba(18,153,96,.08), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg0));
+    }
+
+    .wrap{max-width:1100px;margin:0 auto;padding:22px 16px 36px}
+
+    /* Topbar */
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:14px 14px;
+      border:1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      box-shadow: var(--shadow2);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      z-index: 10;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .mark{
+      width:38px;height:38px;border-radius:14px;
+      border:1px solid rgba(184,134,11,.22);
+      background:
+        radial-gradient(14px 14px at 30% 30%, rgba(184,134,11,.45), transparent 60%),
+        linear-gradient(180deg, rgba(184,134,11,.10), rgba(255,255,255,.68));
+      position:relative;overflow:hidden;
+    }
+    .brand h1{
+      margin:0;
+      font-size:12px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      color: rgba(14,20,32,.86);
+      line-height:1.1;
+    }
+    .brand .sub{
+      margin-top:4px;
+      font-size:12px;
+      color: var(--muted);
+      letter-spacing:.06em;
+    }
+    .right{
+      display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end
+    }
+    .pill{
+      font-size:12px;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.78);
+      color: rgba(14,20,32,.76);
+      white-space:nowrap;
+    }
+    .pill.gold{
+      border-color: rgba(184,134,11,.22);
+      background: linear-gradient(180deg, rgba(184,134,11,.10), rgba(255,255,255,.84));
+      color: rgba(184,134,11,.95);
+    }
+    .badge{
+      font-family: var(--mono);
+      font-size:11px;
+      letter-spacing:.12em;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.78);
+      color: rgba(14,20,32,.68);
+      white-space:nowrap;
+    }
+    .badge.ok{
+      border-color: rgba(18,153,96,.22);
+      background: linear-gradient(180deg, rgba(18,153,96,.10), rgba(255,255,255,.84));
+      color: rgba(18,153,96,.95);
+    }
+    .badge.warn{
+      border-color: rgba(184,134,11,.22);
+      background: linear-gradient(180deg, rgba(184,134,11,.10), rgba(255,255,255,.84));
+      color: rgba(184,134,11,.95);
+    }
+    .badge.bad{
+      border-color: rgba(201,55,55,.22);
+      background: linear-gradient(180deg, rgba(201,55,55,.08), rgba(255,255,255,.84));
+      color: rgba(201,55,55,.95);
+    }
+
+    /* Main */
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+
+    .card{
+      border:1px solid var(--stroke);
+      border-radius: var(--r2);
+      background: rgba(255,255,255,.80);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+    .hd{
+      padding:14px 16px 12px;
+      border-bottom:1px solid rgba(14,20,32,.06);
+    }
+    .hdTop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .hd h2{
+      margin:0;
+      font-size:12px;
+      letter-spacing:.20em;
+      text-transform:uppercase;
+      color: rgba(14,20,32,.72);
+    }
+    .hint{
+      margin-top:6px;
+      font-size:12px;
+      color: rgba(14,20,32,.62);
+      line-height:1.35;
+    }
+    .bd{padding:14px 16px 16px}
+
+    label{
+      display:block;margin:0 0 6px;
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color: rgba(14,20,32,.58);
+    }
+    input{
+      width:100%;
+      font-family: var(--mono);
+      font-size:12px;
+      padding:12px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(14,20,32,.10);
+      background: rgba(255,255,255,.95);
+      color: rgba(14,20,32,.90);
+      outline:none;
+    }
+    input:focus{
+      border-color: rgba(184,134,11,.26);
+      box-shadow: 0 0 0 3px rgba(184,134,11,.10);
+    }
+
+    .btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    button{
+      border:1px solid rgba(14,20,32,.10);
+      background: rgba(255,255,255,.86);
+      color: rgba(14,20,32,.82);
+      padding:11px 12px;
+      border-radius: 14px;
+      font-size:12px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      cursor:pointer;
+    }
+    button.primary{
+      border-color: rgba(184,134,11,.26);
+      background: linear-gradient(180deg, rgba(184,134,11,.14), rgba(255,255,255,.92));
+      color: rgba(184,134,11,.95);
+    }
+    button:disabled{opacity:.55;cursor:not-allowed}
+
+    .status{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(14,20,32,.10);
+      background: rgba(255,255,255,.86);
+      color: rgba(14,20,32,.70);
+      font-size:12px;
+      line-height:1.5;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .status.ok{border-color: rgba(18,153,96,.22); color: rgba(18,153,96,.95); background: rgba(18,153,96,.06)}
+    .status.bad{border-color: rgba(201,55,55,.22); color: rgba(201,55,55,.95); background: rgba(201,55,55,.05)}
+    .status.warn{border-color: rgba(184,134,11,.22); color: rgba(184,134,11,.95); background: rgba(184,134,11,.06)}
+
+    .meta{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width:980px){ .meta{grid-template-columns:1fr} }
+
+    .kv{
+      padding:12px;
+      border-radius: 16px;
+      border:1px solid rgba(14,20,32,.08);
+      background: rgba(255,255,255,.76);
+    }
+    .kv .k{
+      font-size:11px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color: rgba(14,20,32,.55);
+    }
+    .kv .v{
+      margin-top:6px;
+      font-family: var(--mono);
+      font-size:12px;
+      color: rgba(14,20,32,.86);
+      word-break:break-word;
+    }
+    .kv .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+    .mini{padding:8px 10px;border-radius:12px;font-size:11px;letter-spacing:.10em}
+
+    .viewer{
+      height:720px;
+      border-top:1px solid rgba(14,20,32,.06);
+      background: rgba(255,255,255,.60);
+    }
+    iframe{width:100%;height:100%;border:0;background:rgba(255,255,255,.60)}
+
+    footer{
+      margin-top:14px;
+      padding:14px 16px;
+      border:1px solid var(--stroke);
+      border-radius: var(--r2);
+      background: rgba(255,255,255,.72);
+      box-shadow: var(--shadow2);
+      color: rgba(14,20,32,.60);
+      font-size:12px;
+      line-height:1.55
+    }
+    footer strong{color: rgba(184,134,11,.92); font-weight:700}
+    .tiny{font-family: var(--mono); font-size:11px; color: rgba(14,20,32,.48)}
+    details{
+      margin-top:10px;
+      border:1px solid rgba(14,20,32,.08);
+      border-radius: 14px;
+      background: rgba(255,255,255,.70);
+      padding:10px 12px;
+    }
+    summary{
+      cursor:pointer;
+      font-size:12px;
+      color: rgba(14,20,32,.70);
+      letter-spacing:.06em;
+    }
+    .muted{color: rgba(14,20,32,.62)}
+    .mono{font-family: var(--mono)}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>Oasis International Real Estate</h1>
+          <div class="sub">Verification • <span style="color:rgba(184,134,11,.92);font-weight:700">HASH-FIRST</span></div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="pill gold">VERIFY</div>
+        <div class="badge warn" id="levelBadge">STATUS: —</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: Resolve -->
+      <div class="card">
+        <div class="hd">
+          <div class="hdTop">
+            <div>
+              <h2>Resolve</h2>
+              <div class="hint">
+                Enter the document <b>SHA-256 hash</b> (64 hex characters). This portal resolves the record and opens a
+                time-limited signed URL from a private registry.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bd">
+          <div>
+            <label>Hash (SHA-256)</label>
+            <input id="hash" placeholder="64 hex characters" autocomplete="off" spellcheck="false" />
+          </div>
+
+          <div class="btns">
+            <button class="primary" id="btnResolve">Verify</button>
+            <button id="btnCopyLink">Copy Link</button>
+            <button id="btnClear">Clear</button>
+          </div>
+
+          <div id="status" class="status">Ready.</div>
+
+          <details>
+            <summary>What is this?</summary>
+            <div class="muted" style="margin-top:8px">
+              This verification portal checks a hash against the official document registry and returns a short-lived signed link to view the file.
+              Storage remains private.
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- RIGHT: Attestation -->
+      <div class="card">
+        <div class="hd">
+          <div class="hdTop">
+            <div>
+              <h2>Attestation</h2>
+              <div class="hint">
+                If the hash is registered, this page displays the record metadata and opens the verified document.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bd">
+          <div class="meta">
+            <div class="kv">
+              <div class="k">Record ID</div>
+              <div class="v" id="idLine">—</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Hash</div>
+              <div class="v" id="hashLine">—</div>
+              <div class="actions">
+                <button class="mini" id="btnCopyHash">Copy Hash</button>
+              </div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Title</div>
+              <div class="v" id="titleLine">—</div>
+              <div class="v muted mono" id="typeLine">—</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Property / Unit</div>
+              <div class="v" id="propertyLine">—</div>
+              <div class="v muted mono" id="unitLine">—</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Issuer</div>
+              <div class="v">Oasis International Real Estate Inc.</div>
+              <div class="v muted">Official verification terminal</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">Document</div>
+              <div class="v" id="docLine">—</div>
+              <div class="actions">
+                <button class="mini primary" id="btnOpen">Open</button>
+                <button class="mini" id="btnDownload">Download</button>
+              </div>
+            </div>
+          </div>
+
+          <details id="techDetails" style="display:none">
+            <summary>Technical details</summary>
+            <div class="muted mono" id="techLine" style="margin-top:8px">—</div>
+          </details>
+        </div>
+
+        <div class="viewer">
+          <iframe id="pdfFrame" title="Verified Document"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <strong>Oasis International Real Estate • Verification</strong><br/>
+      Signed URLs are time-limited. Registry records are hash-first. Storage buckets remain private.
+      <div style="height:1px;background:rgba(14,20,32,.06);margin:10px 0"></div>
+      <div class="tiny">This portal validates registry output only. It does not grant access beyond the resolved document.</div>
+    </footer>
+  </div>
+
+<script>
+  // ---------------------------------------------------------------------------
+  // CONFIG — EMBEDDED (public)
+  // ---------------------------------------------------------------------------
+  const SB_URL  = "https://xqavgelekscppuupxnhw.supabase.co";
+  const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxYXZnZWxla3NjcHB1dXB4bmh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MjEyNjAsImV4cCI6MjA4NzI5NzI2MH0.kVhtpJMT4CWOF0NE0y31xYh22uU9cmfsjih6c7ZUs14";
+  const VERIFY_FN = "property-verify";
+
+  // ---------------------------------------------------------------------------
+  // DOM helpers
+  // ---------------------------------------------------------------------------
+  const $ = (id) => document.getElementById(id);
+  const qs = new URLSearchParams(location.search);
+
+  let activeViewUrl = null;
+  let activeDownloadUrl = null;
+  let activeRecord = null;
+
+  const setBadge = (text, tone) => {
+    const el = $("levelBadge");
+    el.textContent = text;
+    el.className = "badge " + (tone || "warn");
+  };
+
+  const setStatus = (msg, tone) => {
+    const el = $("status");
+    el.className = "status" + (tone ? " " + tone : "");
+    el.textContent = msg;
+  };
+
+  function isHex64(v){ return typeof v === "string" && /^[a-f0-9]{64}$/i.test(v.trim()); }
+
+  function resetRightPane() {
+    setBadge("STATUS: —", "warn");
+    $("idLine").textContent = "—";
+    $("hashLine").textContent = "—";
+    $("titleLine").textContent = "—";
+    $("typeLine").textContent = "—";
+    $("propertyLine").textContent = "—";
+    $("unitLine").textContent = "—";
+    $("docLine").textContent = "—";
+    $("pdfFrame").src = "";
+    $("techDetails").style.display = "none";
+    $("techLine").textContent = "—";
+    activeViewUrl = null;
+    activeDownloadUrl = null;
+    activeRecord = null;
+  }
+
+  function safeText(v, fallback="—"){
+    if (v === null || v === undefined) return fallback;
+    const s = String(v).trim();
+    return s ? s : fallback;
+  }
+
+  async function readJson(res) {
+    const raw = await res.text();
+    try { return { json: JSON.parse(raw), raw }; } catch { return { json: null, raw }; }
+  }
+
+  async function callVerify(hash) {
+    resetRightPane();
+    setStatus("Resolving…", null);
+
+    const endpoint = `${SB_URL}/functions/v1/${VERIFY_FN}`;
+
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SB_ANON,
+          "Authorization": `Bearer ${SB_ANON}`
+        },
+        body: JSON.stringify({ hash })
+      });
+
+      const { json, raw } = await readJson(res);
+
+      // If resolver didn't return JSON, treat as temporary error.
+      if (!json) {
+        setBadge("STATUS: TEMPORARY ERROR", "bad");
+        setStatus("Temporary error resolving this hash. Please try again shortly.", "bad");
+        return;
+      }
+
+      if (!res.ok || json.ok !== true) {
+        const err = (json.error || "FAILED");
+        if (err === "NOT_REGISTERED") {
+          setBadge("STATUS: NOT REGISTERED", "warn");
+          setStatus("This hash is not registered in the official document registry.", "warn");
+          return;
+        }
+        setBadge("STATUS: UNAVAILABLE", "bad");
+        setStatus("Document unavailable. If this persists, contact the issuer.", "bad");
+        return;
+      }
+
+      // Success
+      const rec = json.record || {};
+      activeRecord = rec;
+
+      const status =
+        (rec.status ? String(rec.status).toUpperCase() : null) ||
+        (rec.kind ? String(rec.kind).toUpperCase() : "VERIFIED");
+
+      // We don't rely on record.status existing, so we just show VERIFIED in green.
+      setBadge("STATUS: VERIFIED", "ok");
+
+      $("idLine").textContent = safeText(rec.id);
+      $("hashLine").textContent = safeText(rec.file_hash);
+      $("titleLine").textContent = safeText(rec.title, safeText(rec.doc_type, "Document"));
+      $("typeLine").textContent  = `doc_type: ${safeText(rec.doc_type)} • kind: ${safeText(rec.kind)} • created: ${safeText(rec.created_at)}`;
+
+      // Property/Unit: your current resolver returns property_id; unit may not exist yet (fine).
+      $("propertyLine").textContent = safeText(rec.property_id, "—");
+      $("unitLine").textContent = "—";
+
+      // URLs
+      activeViewUrl = json.view_url || null;
+      activeDownloadUrl = json.download_url || json.signed_url || null;
+
+      if (activeViewUrl) {
+        $("pdfFrame").src = activeViewUrl;
+        $("docLine").textContent = "Verified document loaded (time-limited link).";
+        setStatus("Verified.", "ok");
+      } else {
+        $("docLine").textContent = "Verified record, but document link unavailable.";
+        setStatus("Verified record, but document link unavailable.", "warn");
+      }
+
+      // Optional technical details (hidden by default)
+      // You can delete this block entirely if you never want tech details.
+      $("techDetails").style.display = "block";
+      $("techLine").textContent =
+        `request_id: ${safeText(json.request_id)} • expires_in: ${safeText(json.expires_in)}s`;
+    } catch (e) {
+      setBadge("STATUS: TEMPORARY ERROR", "bad");
+      setStatus("Temporary network error. Please try again.", "bad");
+    }
+  }
+
+  // Buttons
+  $("btnResolve").addEventListener("click", () => {
+    const h = ($("hash").value || "").trim().toLowerCase();
+    if (!isHex64(h)) {
+      setBadge("STATUS: INVALID HASH", "bad");
+      setStatus("Hash must be 64 hex characters (SHA-256).", "bad");
+      return;
+    }
+    // Update URL (nice for sharing)
+    const u = new URL(location.href);
+    u.searchParams.set("hash", h);
+    history.replaceState({}, "", u.toString());
+    callVerify(h);
+  });
+
+  $("btnCopyLink").addEventListener("click", async () => {
+    const h = ($("hash").value || "").trim().toLowerCase();
+    const u = new URL(location.href);
+    u.searchParams.delete("hash");
+    if (isHex64(h)) u.searchParams.set("hash", h);
+    try {
+      await navigator.clipboard.writeText(u.toString());
+      setStatus("Link copied.", "ok");
+    } catch {
+      setStatus("Copy failed.", "bad");
+    }
+  });
+
+  $("btnClear").addEventListener("click", () => {
+    $("hash").value = "";
+    const u = new URL(location.href);
+    u.searchParams.delete("hash");
+    history.replaceState({}, "", u.toString());
+    resetRightPane();
+    setStatus("Cleared.", null);
+  });
+
+  $("btnCopyHash").addEventListener("click", async () => {
+    const h = $("hashLine").textContent || "";
+    if (!h || h === "—") return;
+    try {
+      await navigator.clipboard.writeText(h);
+      setStatus("Hash copied.", "ok");
+    } catch {
+      setStatus("Copy failed.", "bad");
+    }
+  });
+
+  $("btnOpen").addEventListener("click", () => {
+    const url = activeViewUrl || activeDownloadUrl;
+    if (!url) return setStatus("No document link loaded yet.", "bad");
+    window.open(url, "_blank", "noopener,noreferrer");
+  });
+
+  $("btnDownload").addEventListener("click", () => {
+    const url = activeDownloadUrl || activeViewUrl;
+    if (!url) return setStatus("No document link loaded yet.", "bad");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Oasis-Real-Estate-Verified-Document.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+
+  // Auto-resolve from ?hash=
+  const initialHash = (qs.get("hash") || "").trim().toLowerCase();
+  if (isHex64(initialHash)) {
+    $("hash").value = initialHash;
+    setStatus("Resolving from link…", null);
+    callVerify(initialHash);
+  } else {
+    resetRightPane();
+    setStatus("Ready. Enter a hash and verify.", null);
+  }
+</script>
+</body>
+</html>
