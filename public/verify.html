@@ -315,7 +315,7 @@
             <div>
               <h2>Resolve</h2>
               <div class="hint">
-                Enter the document <b>SHA-256 hash</b> (64 hex characters) <span class="muted">or</span> a <b>Record ID</b> (UUID).
+                Enter the document <b>SHA-256 hash</b> (64 hex characters) <span class="muted">or</span> a <b>Record ID</b> (UUID) <span class="muted">or</span> an <b>Export ID</b> (64 hex characters).
                 This portal resolves the record and opens a time-limited signed URL from a private registry.
               </div>
             </div>
@@ -324,6 +324,10 @@
 
         <div class="bd">
           <div style="display:grid;grid-template-columns:1fr;gap:12px">
+            <div>
+              <label>Export ID (Report)</label>
+              <input id="exportId" placeholder="64 hex characters (preferred for QR)" autocomplete="off" spellcheck="false" />
+            </div>
             <div>
               <label>Hash (SHA-256)</label>
               <input id="hash" placeholder="64 hex characters" autocomplete="off" spellcheck="false" />
@@ -345,7 +349,7 @@
           <details>
             <summary>What is this?</summary>
             <div class="muted" style="margin-top:8px">
-              This verification portal checks a hash (or record id) against the official document registry and returns a short-lived signed link to view the file.
+              This verification portal checks an export id, hash (or record id) against the official registry and returns a short-lived signed link to view the file.
               Storage remains private.
             </div>
           </details>
@@ -434,7 +438,12 @@
   // ---------------------------------------------------------------------------
   const SB_URL  = "https://xqavgelekscppuupxnhw.supabase.co";
   const SB_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxYXZnZWxla3NjcHB1dXB4bmh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MjEyNjAsImV4cCI6MjA4NzI5NzI2MH0.kVhtpJMT4CWOF0NE0y31xYh22uU9cmfsjih6c7ZUs14";
+
+  // Primary file resolver (existing)
   const VERIFY_FN = "property-verify";
+
+  // New: report export resolver (must exist server-side; see note below)
+  const REPORT_VERIFY_FN = "property-verify-report-export";
 
   // ---------------------------------------------------------------------------
   // DOM helpers
@@ -489,66 +498,93 @@
     try { return { json: JSON.parse(raw), raw }; } catch { return { json: null, raw }; }
   }
 
+  // ---------------------------------------------------------------------------
+  // Payload: prefer export_id > record id > hash
+  // QR should use: ?export_id=<hex64>
+  // ---------------------------------------------------------------------------
   function buildPayload() {
+    const export_id = ($("exportId").value || "").trim().toLowerCase();
     const h = ($("hash").value || "").trim().toLowerCase();
     const rid = ($("rid").value || "").trim();
 
-    // Priority: explicit id if present (QR should send ?id=...)
+    if (export_id && isHex64(export_id)) return { export_id };
     if (rid && isUuid(rid)) return { id: rid };
     if (h && isHex64(h)) return { hash: h };
     return null;
   }
 
   function syncInputsFromUrl() {
+    const urlExport = (qs.get("export_id") || qs.get("exportId") || "").trim().toLowerCase();
     const urlHash = (qs.get("hash") || "").trim().toLowerCase();
     const urlId = (qs.get("id") || qs.get("file_id") || qs.get("rid") || "").trim();
+
+    if (urlExport && isHex64(urlExport)) {
+      $("exportId").value = urlExport;
+      $("rid").value = "";
+      $("hash").value = "";
+      return { export_id: urlExport };
+    }
 
     if (urlId && isUuid(urlId)) {
       $("rid").value = urlId;
       $("hash").value = "";
+      $("exportId").value = "";
       return { id: urlId };
     }
+
     if (urlHash && isHex64(urlHash)) {
       $("hash").value = urlHash;
       $("rid").value = "";
+      $("exportId").value = "";
       return { hash: urlHash };
     }
+
     return null;
   }
 
   function setUrlFromPayload(payload) {
     const u = new URL(location.href);
     // clean
+    u.searchParams.delete("export_id");
+    u.searchParams.delete("exportId");
     u.searchParams.delete("hash");
     u.searchParams.delete("id");
     u.searchParams.delete("file_id");
     u.searchParams.delete("rid");
 
+    if (payload?.export_id) u.searchParams.set("export_id", payload.export_id);
     if (payload?.id) u.searchParams.set("id", payload.id);
     if (payload?.hash) u.searchParams.set("hash", payload.hash);
 
     history.replaceState({}, "", u.toString());
   }
 
+  async function callEdge(fnName, payload) {
+    const endpoint = `${SB_URL}/functions/v1/${fnName}`;
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SB_ANON,
+        // Public terminal: anon token is used to invoke Edge function
+        "Authorization": `Bearer ${SB_ANON}`
+      },
+      body: JSON.stringify(payload)
+    });
+    return { res, ...(await readJson(res)) };
+  }
+
   async function callVerify(payload) {
     resetRightPane();
     setStatus("Resolving…", null);
 
-    const endpoint = `${SB_URL}/functions/v1/${VERIFY_FN}`;
-
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": SB_ANON,
-          // Public terminal: we use anon for access to Edge function (matches your current pattern)
-          "Authorization": `Bearer ${SB_ANON}`
-        },
-        body: JSON.stringify(payload)
-      });
+      // Route based on payload shape:
+      // - export_id => report export resolver (zip)
+      // - id/hash   => property file resolver (pdf/doc)
+      const isReport = !!payload?.export_id;
 
-      const { json, raw } = await readJson(res);
+      const { res, json } = await callEdge(isReport ? REPORT_VERIFY_FN : VERIFY_FN, payload);
 
       if (!json) {
         setBadge("STATUS: TEMPORARY ERROR", "bad");
@@ -557,15 +593,15 @@
       }
 
       if (!res.ok || json.ok !== true) {
-        const err = (json.error || "FAILED");
+        const err = (json.error || json.code || "FAILED");
         if (err === "NOT_REGISTERED") {
           setBadge("STATUS: NOT REGISTERED", "warn");
-          setStatus("This identifier is not registered in the official document registry.", "warn");
+          setStatus("This identifier is not registered in the official registry.", "warn");
           return;
         }
         if (err === "MISSING_IDENTIFIER") {
           setBadge("STATUS: INVALID INPUT", "bad");
-          setStatus("Provide a valid Record ID (UUID) or Hash (SHA-256 hex64).", "bad");
+          setStatus("Provide a valid Export ID (hex64), Record ID (UUID), or Hash (SHA-256 hex64).", "bad");
           return;
         }
         setBadge("STATUS: UNAVAILABLE", "bad");
@@ -573,18 +609,30 @@
         return;
       }
 
-      const rec = json.record || {};
+      // Two shapes:
+      // A) property-verify: { record, view_url, download_url, signed_url, ... }
+      // B) report export verify: { export, view_url, download_url, ... }
+      const rec = json.record || json.export || {};
       activeRecord = rec;
 
       setBadge("STATUS: VERIFIED", "ok");
 
+      // If report export, there may not be a property_files record id/hash.
       $("idLine").textContent = safeText(rec.id);
-      $("hashLine").textContent = safeText(rec.file_hash);
-      $("titleLine").textContent = safeText(rec.title, safeText(rec.doc_type, "Document"));
-      $("typeLine").textContent  = `doc_type: ${safeText(rec.doc_type)} • kind: ${safeText(rec.kind)} • created: ${safeText(rec.created_at)}`;
+      $("hashLine").textContent = safeText(rec.file_hash || rec.sha256 || rec.zip_sha256);
+      $("titleLine").textContent = safeText(rec.title, isReport ? "Report Export" : safeText(rec.doc_type, "Document"));
 
-      $("propertyLine").textContent = safeText(rec.property_id, "—");
-      $("unitLine").textContent = safeText(rec.unit_id, "—");
+      if (isReport) {
+        $("typeLine").textContent =
+          `export_id: ${safeText(rec.export_id)} • year: ${safeText(rec.year)} • scope: ${safeText(rec.scope_mode)} • created: ${safeText(rec.created_at)}`;
+        $("propertyLine").textContent = safeText(rec.property_id, "—");
+        $("unitLine").textContent = safeText(rec.unit_id, "—");
+      } else {
+        $("typeLine").textContent =
+          `doc_type: ${safeText(rec.doc_type)} • kind: ${safeText(rec.kind)} • created: ${safeText(rec.created_at)}`;
+        $("propertyLine").textContent = safeText(rec.property_id, "—");
+        $("unitLine").textContent = safeText(rec.unit_id, "—");
+      }
 
       activeViewUrl = json.view_url || null;
       activeDownloadUrl = json.download_url || json.signed_url || null;
@@ -613,7 +661,7 @@
     const payload = buildPayload();
     if (!payload) {
       setBadge("STATUS: INVALID INPUT", "bad");
-      setStatus("Enter a valid Record ID (UUID) or Hash (SHA-256 hex64).", "bad");
+      setStatus("Enter a valid Export ID (hex64), Record ID (UUID), or Hash (SHA-256 hex64).", "bad");
       return;
     }
     setUrlFromPayload(payload);
@@ -623,10 +671,13 @@
   $("btnCopyLink").addEventListener("click", async () => {
     const payload = buildPayload();
     const u = new URL(location.href);
+    u.searchParams.delete("export_id");
+    u.searchParams.delete("exportId");
     u.searchParams.delete("hash");
     u.searchParams.delete("id");
     u.searchParams.delete("file_id");
     u.searchParams.delete("rid");
+    if (payload?.export_id) u.searchParams.set("export_id", payload.export_id);
     if (payload?.id) u.searchParams.set("id", payload.id);
     if (payload?.hash) u.searchParams.set("hash", payload.hash);
     try {
@@ -638,9 +689,12 @@
   });
 
   $("btnClear").addEventListener("click", () => {
+    $("exportId").value = "";
     $("hash").value = "";
     $("rid").value = "";
     const u = new URL(location.href);
+    u.searchParams.delete("export_id");
+    u.searchParams.delete("exportId");
     u.searchParams.delete("hash");
     u.searchParams.delete("id");
     u.searchParams.delete("file_id");
@@ -678,24 +732,28 @@
     a.remove();
   });
 
-  // If user types ID, clear hash (prevents ambiguity)
+  // Input exclusivity: typing in one clears the others (prevents ambiguity)
+  $("exportId").addEventListener("input", () => {
+    const v = ($("exportId").value || "").trim();
+    if (v) { $("hash").value = ""; $("rid").value = ""; }
+  });
   $("rid").addEventListener("input", () => {
     const rid = ($("rid").value || "").trim();
-    if (rid) $("hash").value = "";
+    if (rid) { $("hash").value = ""; $("exportId").value = ""; }
   });
   $("hash").addEventListener("input", () => {
     const h = ($("hash").value || "").trim();
-    if (h) $("rid").value = "";
+    if (h) { $("rid").value = ""; $("exportId").value = ""; }
   });
 
-  // Auto-resolve from URL: prefer id over hash (QR should use id)
+  // Auto-resolve from URL: prefer export_id > id > hash (QR should use export_id)
   const initial = syncInputsFromUrl();
   if (initial) {
     setStatus("Resolving from link…", null);
     callVerify(initial);
   } else {
     resetRightPane();
-    setStatus("Ready. Enter a record id or hash and verify.", null);
+    setStatus("Ready. Enter an export id, record id, or hash and verify.", null);
   }
 </script>
 </body>
